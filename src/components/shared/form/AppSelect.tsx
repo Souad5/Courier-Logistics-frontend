@@ -1,0 +1,93 @@
+"use client";
+
+import { type ReactNode, useId } from "react";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+
+import { AppField, fieldA11yProps } from "./AppField";
+
+export interface SelectOption<V extends string = string> {
+  value: V;
+  label: ReactNode;
+  disabled?: boolean;
+}
+
+export interface AppSelectProps<V extends string = string> {
+  id?: string;
+  options: SelectOption<V>[];
+  value?: V;
+  onValueChange?: (value: V) => void;
+  placeholder?: string;
+  label?: ReactNode;
+  description?: ReactNode;
+  error?: string;
+  required?: boolean;
+  disabled?: boolean;
+  name?: string;
+  onBlur?: () => void;
+  className?: string;
+  containerClassName?: string;
+}
+
+/**
+ * shadcn <Select> driven by an `options` array, with label/description/error.
+ * It's a controlled component — with react-hook-form use <FormSelect> (or a <Controller>).
+ */
+export function AppSelect<V extends string = string>({
+  id,
+  options,
+  value,
+  onValueChange,
+  placeholder = "Select…",
+  label,
+  description,
+  error,
+  required,
+  disabled,
+  name,
+  onBlur,
+  className,
+  containerClassName,
+}: AppSelectProps<V>) {
+  const generatedId = useId();
+  const selectId = id ?? generatedId;
+
+  return (
+    <AppField
+      htmlFor={selectId}
+      label={label}
+      description={description}
+      error={error}
+      required={required}
+      className={containerClassName}
+    >
+      <Select
+        // "" means "nothing selected" so the placeholder shows.
+        value={value ?? ""}
+        onValueChange={(v) => onValueChange?.(v as V)}
+        disabled={disabled}
+        name={name}
+        required={required}
+        onOpenChange={(open) => !open && onBlur?.()}
+      >
+        <SelectTrigger id={selectId} className={cn("w-full", className)} {...fieldA11yProps(selectId, error)}>
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value} disabled={option.disabled}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </AppField>
+  );
+}
