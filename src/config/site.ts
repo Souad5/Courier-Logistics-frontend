@@ -13,10 +13,21 @@ import {
   Wallet,
 } from "lucide-react";
 
+import { env } from "@/env";
 import type { Role } from "@/types";
 
 export const siteConfig = {
   name: "SwiftParcel",
+  url: env.NEXT_PUBLIC_SITE_URL.replace(/\/+$/, ""),
+  locale: "en_US",
+  keywords: [
+    "courier service",
+    "parcel delivery",
+    "logistics",
+    "package tracking",
+    "same-day delivery",
+    "Bangladesh courier",
+  ],
   description:
     "Courier & logistics management: book, pay for, track and deliver parcels across every zone.",
   contactEmail: "support@swiftparcel.example",

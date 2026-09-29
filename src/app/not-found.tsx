@@ -1,7 +1,7 @@
 import { PackageX } from "lucide-react";
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/shared/AppButton";
 
 export default function NotFound() {
   return (
@@ -15,12 +15,12 @@ export default function NotFound() {
         The page you&apos;re looking for doesn&apos;t exist or has been moved.
       </p>
       <div className="flex gap-2">
-        <Button asChild>
+        <AppButton asChild>
           <Link href="/">Back to home</Link>
-        </Button>
-        <Button asChild variant="outline">
+        </AppButton>
+        <AppButton asChild variant="outline">
           <Link href="/contact">Contact support</Link>
-        </Button>
+        </AppButton>
       </div>
     </div>
   );

@@ -1,10 +1,10 @@
 "use client";
 
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/shared/AppButton";
 
 // Next 16 passes `retry` (formerly `reset`) to error boundaries.
 export default function GlobalError({
@@ -27,12 +27,16 @@ export default function GlobalError({
       <p className="text-muted-foreground max-w-md text-sm">
         An unexpected error occurred. You can try again, or head back to the home page.
       </p>
-      {error.digest && <p className="text-muted-foreground font-mono text-xs">Ref: {error.digest}</p>}
+      {error.digest && (
+        <p className="text-muted-foreground font-mono text-xs">Ref: {error.digest}</p>
+      )}
       <div className="flex gap-2">
-        <Button onClick={() => retry()}>Try again</Button>
-        <Button asChild variant="outline">
+        <AppButton leftIcon={<RotateCcw />} onClick={() => retry()}>
+          Try again
+        </AppButton>
+        <AppButton asChild variant="outline">
           <Link href="/">Go home</Link>
-        </Button>
+        </AppButton>
       </div>
     </div>
   );

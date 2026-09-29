@@ -1,5 +1,14 @@
 import type { LucideIcon } from "lucide-react";
-import { Clock, CreditCard, FileText, MapPinned, Package, ShieldCheck, Snowflake, Wine } from "lucide-react";
+import {
+  Clock,
+  CreditCard,
+  FileText,
+  MapPinned,
+  Package,
+  ShieldCheck,
+  Snowflake,
+  Wine,
+} from "lucide-react";
 
 import type { ParcelType } from "@/types";
 
@@ -23,11 +32,26 @@ export const PRICING = {
   ],
 };
 
-export const PARCEL_TYPE_INFO: Record<ParcelType, { label: string; icon: LucideIcon; description: string }> = {
-  DOCUMENT: { label: "Documents", icon: FileText, description: "Letters, contracts and paperwork." },
+export const PARCEL_TYPE_INFO: Record<
+  ParcelType,
+  { label: string; icon: LucideIcon; description: string }
+> = {
+  DOCUMENT: {
+    label: "Documents",
+    icon: FileText,
+    description: "Letters, contracts and paperwork.",
+  },
   PARCEL: { label: "Parcels", icon: Package, description: "Everyday boxes and packages." },
-  FRAGILE: { label: "Fragile", icon: Wine, description: "Glassware, electronics, anything delicate." },
-  PERISHABLE: { label: "Perishable", icon: Snowflake, description: "Food and time-sensitive goods." },
+  FRAGILE: {
+    label: "Fragile",
+    icon: Wine,
+    description: "Glassware, electronics, anything delicate.",
+  },
+  PERISHABLE: {
+    label: "Perishable",
+    icon: Snowflake,
+    description: "Food and time-sensitive goods.",
+  },
 };
 
 export const FEATURES: Array<{ title: string; description: string; icon: LucideIcon }> = [

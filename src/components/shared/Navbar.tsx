@@ -5,13 +5,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ROLE_HOME } from "@/config/api.config";
 import { publicNav } from "@/config/site";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
 
+import { AppButton } from "./AppButton";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
@@ -47,27 +47,27 @@ export function Navbar() {
           <ThemeToggle />
           {user ? (
             <>
-              <Button asChild size="sm" className="hidden sm:inline-flex">
+              <AppButton asChild size="sm" className="hidden sm:inline-flex">
                 <Link href={ROLE_HOME[user.role]}>Dashboard</Link>
-              </Button>
+              </AppButton>
               <UserMenu />
             </>
           ) : (
             <div className="hidden items-center gap-2 sm:flex">
-              <Button asChild variant="ghost" size="sm">
+              <AppButton asChild variant="ghost" size="sm">
                 <Link href="/login">Log in</Link>
-              </Button>
-              <Button asChild size="sm">
+              </AppButton>
+              <AppButton asChild size="sm">
                 <Link href="/register">Get started</Link>
-              </Button>
+              </AppButton>
             </div>
           )}
 
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu">
+              <AppButton variant="ghost" size="icon" className="md:hidden" aria-label="Open menu">
                 <Menu />
-              </Button>
+              </AppButton>
             </SheetTrigger>
             <SheetContent side="right" className="w-72">
               <SheetHeader>
@@ -91,16 +91,16 @@ export function Navbar() {
                 ))}
                 {!user && (
                   <div className="mt-4 flex flex-col gap-2">
-                    <Button asChild variant="outline">
+                    <AppButton asChild variant="outline">
                       <Link href="/login" onClick={() => setOpen(false)}>
                         Log in
                       </Link>
-                    </Button>
-                    <Button asChild>
+                    </AppButton>
+                    <AppButton asChild>
                       <Link href="/register" onClick={() => setOpen(false)}>
                         Get started
                       </Link>
-                    </Button>
+                    </AppButton>
                   </div>
                 )}
               </nav>

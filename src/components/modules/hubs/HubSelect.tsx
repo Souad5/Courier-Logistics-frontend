@@ -1,39 +1,36 @@
 "use client";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { AppSelect, type AppSelectProps } from "@/components/shared/form";
 import { useHubs } from "@/hooks/useHubs";
 
-interface HubSelectProps {
-  value?: string;
+export type HubSelectProps = Omit<AppSelectProps, "options" | "onValueChange"> & {
   onChange: (hubId: string) => void;
-  placeholder?: string;
-  id?: string;
-  disabled?: boolean;
-}
+};
 
-/** Select bound to the public hub list; pass to react-hook-form via <Controller>. */
-export function HubSelect({ value, onChange, placeholder = "Select a hub", id, disabled }: HubSelectProps) {
+/**
+ * AppSelect bound to the public hub list. Accepts every AppSelect prop
+ * (label, error, required…); with react-hook-form wrap it in a <Controller>.
+ */
+export function HubSelect({
+  onChange,
+  placeholder = "Select a hub",
+  disabled,
+  ...props
+}: HubSelectProps) {
   const { data, isLoading } = useHubs({ limit: 100 });
-  const hubs = data?.data.hubs ?? [];
+
+  const options = (data?.data.hubs ?? []).map((hub) => ({
+    value: hub.id,
+    label: `${hub.name} · ${hub.zoneName}`,
+  }));
 
   return (
-    <Select value={value} onValueChange={onChange} disabled={disabled || isLoading}>
-      <SelectTrigger id={id} className="w-full">
-        <SelectValue placeholder={isLoading ? "Loading hubs…" : placeholder} />
-      </SelectTrigger>
-      <SelectContent>
-        {hubs.map((hub) => (
-          <SelectItem key={hub.id} value={hub.id}>
-            {hub.name} · {hub.zoneName}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <AppSelect
+      {...props}
+      options={options}
+      onValueChange={onChange}
+      placeholder={isLoading ? "Loading hubs…" : placeholder}
+      disabled={disabled || isLoading}
+    />
   );
 }

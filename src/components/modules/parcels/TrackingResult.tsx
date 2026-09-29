@@ -36,8 +36,8 @@ export function TrackingResult({ trackingNumber }: { trackingNumber: string }) {
           <StatusBadge status={parcel.status} />
         </div>
         <CardDescription>
-          {humanize(parcel.type)} · {parcel.senderCity ?? "Origin"} → {parcel.receiverCity ?? "Destination"} ·
-          for {parcel.receiverName}
+          {humanize(parcel.type)} · {parcel.senderCity ?? "Origin"} →{" "}
+          {parcel.receiverCity ?? "Destination"} · for {parcel.receiverName}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -59,8 +59,7 @@ export function TrackingResult({ trackingNumber }: { trackingNumber: string }) {
         {parcel.proofOfDeliveryUrl && (
           <div className="space-y-2">
             <p className="text-sm font-medium">Proof of delivery</p>
-            {/* Cloudinary URL; plain <img> avoids configuring next/image remote patterns. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {/* biome-ignore lint/performance/noImgElement: Cloudinary URL; a plain <img> avoids configuring next/image remote patterns */}
             <img
               src={parcel.proofOfDeliveryUrl}
               alt="Proof of delivery"

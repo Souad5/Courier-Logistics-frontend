@@ -5,8 +5,14 @@ import { ContactForm } from "@/components/modules/contact/ContactForm";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { siteConfig } from "@/config/site";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Contact" };
+export const metadata: Metadata = pageMetadata({
+  title: "Contact",
+  description:
+    "Questions about a delivery, pricing or becoming a courier? Get in touch with our support team.",
+  path: "/contact",
+});
 
 export default function ContactPage() {
   return (

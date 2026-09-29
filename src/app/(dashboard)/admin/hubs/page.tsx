@@ -9,9 +9,7 @@ export default function AdminHubsPage() {
   return (
     <>
       <PageHeader title="Hubs" description="Create and maintain hubs and delivery zones." />
-      <ComingSoon
-        endpoint="GET/POST /hubs · PATCH/DELETE /hubs/:id"
-      />
+      <ComingSoon endpoint="GET/POST /hubs · PATCH/DELETE /hubs/:id" />
     </>
   );
 }

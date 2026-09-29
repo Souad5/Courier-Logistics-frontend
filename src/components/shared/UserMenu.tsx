@@ -4,7 +4,6 @@ import { LayoutDashboard, LogOut, User } from "lucide-react";
 import Link from "next/link";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +15,7 @@ import {
 import { ROLE_HOME } from "@/config/api.config";
 import { useAuth } from "@/hooks/useAuth";
 import { humanize, initials } from "@/lib/utils";
+import { AppButton } from "./AppButton";
 
 export function UserMenu() {
   const { user, logout } = useAuth();
@@ -24,12 +24,12 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full" aria-label="Account menu">
+        <AppButton variant="ghost" size="icon" className="rounded-full" aria-label="Account menu">
           <Avatar className="size-8">
             {user.avatarUrl && <AvatarImage src={user.avatarUrl} alt={user.name} />}
             <AvatarFallback>{initials(user.name)}</AvatarFallback>
           </Avatar>
-        </Button>
+        </AppButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="font-normal">

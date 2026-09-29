@@ -1,11 +1,12 @@
 "use client";
 
+import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { PayNowButton } from "@/components/modules/payments/PayNowButton";
 import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
+import { AppInput } from "@/components/shared/form";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePagination } from "@/hooks/usePagination";
 import { useMyParcels } from "@/hooks/useParcels";
@@ -73,11 +74,14 @@ export function MyParcelsTable({ showPayAction = false }: { showPayAction?: bool
       onPageChange={setPage}
       emptyMessage="No parcels yet."
       toolbar={
-        <Input
+        <AppInput
+          type="search"
           value={search}
           onChange={(event) => setSearchInput(event.target.value)}
           placeholder="Search tracking number or receiver…"
-          className="max-w-xs"
+          aria-label="Search parcels"
+          leftIcon={<Search />}
+          containerClassName="w-full max-w-xs"
         />
       }
     />

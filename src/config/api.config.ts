@@ -1,7 +1,23 @@
 import { env } from "@/env";
 import type { Role } from "@/types";
 
-export const API_BASE_URL = env.NEXT_PUBLIC_API_BASE_URL.replace(/\/+$/, "");
+/** The real backend, e.g. https://…vercel.app/api/v1 (NEXT_PUBLIC_API_BASE_URL). */
+export const BACKEND_API_URL = env.NEXT_PUBLIC_API_BASE_URL.replace(/\/+$/, "");
+
+/**
+ * Same-origin path that next.config.ts rewrites to BACKEND_API_URL in `next dev`.
+ * The browser only ever talks to the page's own origin, so CORS never applies:
+ * the app works from localhost, a LAN IP (http://192.168.x.x:3000) or a phone
+ * without adding each origin to the backend's CLIENT_URL.
+ */
+export const DEV_API_PROXY_PATH = "/api/v1";
+
+/**
+ * What the api client calls. Production calls the backend directly, so the
+ * deployed frontend's origin must be in the backend's CLIENT_URL (CORS).
+ */
+export const API_BASE_URL =
+  process.env.NODE_ENV === "development" ? DEV_API_PROXY_PATH : BACKEND_API_URL;
 
 /** Every courier-backend route, relative to API_BASE_URL (/api/v1). */
 export const ENDPOINTS = {

@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
+
 import { Logo } from "@/components/shared/Logo";
+import { noIndexRobots } from "@/lib/seo";
+
+// Stripe return pages are only meaningful right after checkout.
+export const metadata: Metadata = { robots: noIndexRobots };
 
 export default function PaymentLayout({ children }: { children: React.ReactNode }) {
   return (

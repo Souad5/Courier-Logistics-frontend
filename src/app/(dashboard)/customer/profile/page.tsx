@@ -9,9 +9,7 @@ export default function CustomerProfilePage() {
   return (
     <>
       <PageHeader title="Profile" description="Your account details." />
-      <ComingSoon
-        endpoint="GET /users/me · PATCH /users/me"
-      />
+      <ComingSoon endpoint="GET /users/me · PATCH /users/me" />
     </>
   );
 }

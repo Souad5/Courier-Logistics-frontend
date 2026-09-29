@@ -3,15 +3,23 @@ import Link from "next/link";
 
 import { RegisterForm } from "@/components/modules/auth/RegisterForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Create account" };
+export const metadata: Metadata = pageMetadata({
+  title: "Create account",
+  description:
+    "Create a free account to send parcels as a customer, or sign up to deliver as a courier.",
+  path: "/register",
+});
 
 export default function RegisterPage() {
   return (
     <Card>
       <CardHeader className="text-center">
         <CardTitle className="text-2xl">Create your account</CardTitle>
-        <CardDescription>Send parcels as a customer, or sign up to deliver as a courier.</CardDescription>
+        <CardDescription>
+          Send parcels as a customer, or sign up to deliver as a courier.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <RegisterForm />

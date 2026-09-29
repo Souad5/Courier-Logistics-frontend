@@ -2,7 +2,7 @@ import { CircleX } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/shared/AppButton";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata: Metadata = { title: "Payment cancelled" };
@@ -18,9 +18,9 @@ export default function PaymentCancelPage() {
         <p className="text-muted-foreground text-sm">
           No charge was made. Your parcel is saved as pending — you can pay for it any time.
         </p>
-        <Button asChild>
+        <AppButton asChild>
           <Link href="/customer/parcels">Back to my parcels</Link>
-        </Button>
+        </AppButton>
       </CardContent>
     </Card>
   );

@@ -14,10 +14,11 @@ export interface ConfirmDialogProps {
   /** Red confirm button for irreversible actions (delete, cancel parcel…). */
   destructive?: boolean;
   /**
-   * May return a promise: the confirm button shows a spinner until it settles,
-   * and the dialog closes only if it resolves (stays open on error).
+   * May return a promise (e.g. `mutateAsync`): the confirm button shows a
+   * spinner until it settles, and the dialog closes only if it resolves (stays
+   * open on error). Any return value is accepted and awaited.
    */
-  onConfirm: () => void | Promise<unknown>;
+  onConfirm: () => unknown;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }

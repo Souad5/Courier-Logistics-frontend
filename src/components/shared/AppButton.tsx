@@ -41,7 +41,11 @@ export function AppButton({
       {loading ? (
         <Loader2 className="animate-spin" data-icon="inline-start" aria-hidden />
       ) : (
-        leftIcon && <span data-icon="inline-start" className="contents">{leftIcon}</span>
+        leftIcon && (
+          <span data-icon="inline-start" className="contents">
+            {leftIcon}
+          </span>
+        )
       )}
       {loading && loadingText ? loadingText : children}
       {!loading && rightIcon && (

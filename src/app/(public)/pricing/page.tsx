@@ -11,9 +11,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PRICING } from "@/config/content";
+import { pageMetadata } from "@/lib/seo";
 import { formatCurrency } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Pricing" };
+export const metadata: Metadata = pageMetadata({
+  title: "Pricing",
+  description:
+    "Transparent courier pricing: a flat base fee, a per-kg weight rate and zone surcharges. See exactly what your parcel costs before you pay.",
+  path: "/pricing",
+});
 
 export default function PricingPage() {
   const example = { weightKg: 2.5, origin: PRICING.zones[0], destination: PRICING.zones[4] };
@@ -36,14 +42,18 @@ export default function PricingPage() {
             <CardDescription>Base fee</CardDescription>
             <CardTitle className="text-3xl">{formatCurrency(PRICING.baseFee)}</CardTitle>
           </CardHeader>
-          <CardContent className="text-muted-foreground text-sm">Charged on every parcel.</CardContent>
+          <CardContent className="text-muted-foreground text-sm">
+            Charged on every parcel.
+          </CardContent>
         </Card>
         <Card>
           <CardHeader>
             <CardDescription>Weight</CardDescription>
             <CardTitle className="text-3xl">{formatCurrency(PRICING.perKg)} / kg</CardTitle>
           </CardHeader>
-          <CardContent className="text-muted-foreground text-sm">Billed on actual weight.</CardContent>
+          <CardContent className="text-muted-foreground text-sm">
+            Billed on actual weight.
+          </CardContent>
         </Card>
         <Card>
           <CardHeader>
@@ -92,7 +102,10 @@ export default function PricingPage() {
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <Row label="Base fee" value={PRICING.baseFee} />
-            <Row label={`Weight (${example.weightKg} kg × ${PRICING.perKg})`} value={example.weightKg * PRICING.perKg} />
+            <Row
+              label={`Weight (${example.weightKg} kg × ${PRICING.perKg})`}
+              value={example.weightKg * PRICING.perKg}
+            />
             <Row label={`Origin zone (${example.origin.label})`} value={example.origin.surcharge} />
             <Row
               label={`Destination zone (${example.destination.label})`}

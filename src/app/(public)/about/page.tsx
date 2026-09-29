@@ -3,13 +3,25 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { siteConfig } from "@/config/site";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "About" };
+export const metadata: Metadata = pageMetadata({
+  title: "About",
+  description:
+    "We connect customers with couriers through a hub network, clear pricing and end-to-end parcel tracking.",
+  path: "/about",
+});
 
 const VALUES = [
-  { title: "Reliability", text: "Every status change is recorded, so nothing goes missing without a trace." },
+  {
+    title: "Reliability",
+    text: "Every status change is recorded, so nothing goes missing without a trace.",
+  },
   { title: "Transparency", text: "Fees are calculated by clear rules and shown before you pay." },
-  { title: "Accountability", text: "Couriers confirm deliveries with photo proof; every critical action is audited." },
+  {
+    title: "Accountability",
+    text: "Couriers confirm deliveries with photo proof; every critical action is audited.",
+  },
 ];
 
 export default function AboutPage() {

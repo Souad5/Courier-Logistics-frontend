@@ -77,7 +77,11 @@ export function AppSelect<V extends string = string>({
         required={required}
         onOpenChange={(open) => !open && onBlur?.()}
       >
-        <SelectTrigger id={selectId} className={cn("w-full", className)} {...fieldA11yProps(selectId, error)}>
+        <SelectTrigger
+          id={selectId}
+          className={cn("w-full", className)}
+          {...fieldA11yProps(selectId, error)}
+        >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>

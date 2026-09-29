@@ -9,9 +9,7 @@ export default function AdminUsersPage() {
   return (
     <>
       <PageHeader title="Users" description="Browse users and change roles." />
-      <ComingSoon
-        endpoint="GET /users · PATCH /users/:id/role"
-      />
+      <ComingSoon endpoint="GET /users · PATCH /users/:id/role" />
     </>
   );
 }

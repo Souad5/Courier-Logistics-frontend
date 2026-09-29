@@ -3,7 +3,6 @@
 import { Menu, PanelLeft } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authStorage } from "@/lib/auth-storage";
@@ -11,6 +10,7 @@ import { humanize } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
 import { useUIStore } from "@/store/ui.store";
 
+import { AppButton } from "./AppButton";
 import { Logo } from "./Logo";
 import { Sidebar, SidebarNav } from "./Sidebar";
 import { ThemeToggle } from "./ThemeToggle";
@@ -40,7 +40,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="bg-background/80 sticky top-0 z-30 flex h-14 items-center gap-2 border-b px-4 backdrop-blur">
-          <Button
+          <AppButton
             variant="ghost"
             size="icon"
             className="md:hidden"
@@ -48,8 +48,8 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             onClick={() => setMobileSidebarOpen(true)}
           >
             <Menu />
-          </Button>
-          <Button
+          </AppButton>
+          <AppButton
             variant="ghost"
             size="icon"
             className="hidden md:inline-flex"
@@ -57,7 +57,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             onClick={toggleSidebar}
           >
             <PanelLeft />
-          </Button>
+          </AppButton>
           {role && (
             <span className="text-muted-foreground text-sm">{humanize(role)} dashboard</span>
           )}

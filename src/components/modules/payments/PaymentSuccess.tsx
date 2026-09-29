@@ -5,7 +5,7 @@ import { CircleCheck } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 
-import { Button } from "@/components/ui/button";
+import { AppButton } from "@/components/shared/AppButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { queryKeys } from "@/lib/query-keys";
 
@@ -34,9 +34,9 @@ export function PaymentSuccess({ sessionId }: { sessionId?: string }) {
         {sessionId && (
           <p className="text-muted-foreground font-mono text-xs break-all">Ref: {sessionId}</p>
         )}
-        <Button asChild>
+        <AppButton asChild>
           <Link href="/customer/parcels">View my parcels</Link>
-        </Button>
+        </AppButton>
       </CardContent>
     </Card>
   );

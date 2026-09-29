@@ -47,7 +47,9 @@ export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const role = getRole(request);
 
-  const requiredRole = PROTECTED_PREFIXES.find(([, prefix]) => matchesPrefix(pathname, prefix))?.[0];
+  const requiredRole = PROTECTED_PREFIXES.find(([, prefix]) =>
+    matchesPrefix(pathname, prefix),
+  )?.[0];
 
   if (requiredRole) {
     if (!role) {

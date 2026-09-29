@@ -3,7 +3,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -15,6 +14,10 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import type { PaginationMeta } from "@/types";
+
+import { AppButton } from "./AppButton";
+
+const SKELETON_ROWS = ["s1", "s2", "s3", "s4", "s5"];
 
 export interface DataTableColumn<T> {
   key: string;
@@ -64,8 +67,8 @@ export function DataTable<T>({
           </TableHeader>
           <TableBody>
             {loading && rows.length === 0 ? (
-              Array.from({ length: 5 }, (_, i) => (
-                <TableRow key={i}>
+              SKELETON_ROWS.map((rowKey) => (
+                <TableRow key={rowKey}>
                   {columns.map((column) => (
                     <TableCell key={column.key}>
                       <Skeleton className="h-5 w-full" />
@@ -103,22 +106,24 @@ export function DataTable<T>({
             Page {meta.page} of {meta.totalPages} · {meta.total} total
           </p>
           <div className="flex gap-2">
-            <Button
+            <AppButton
               variant="outline"
               size="sm"
               disabled={meta.page <= 1}
+              leftIcon={<ChevronLeft />}
               onClick={() => onPageChange?.(meta.page - 1)}
             >
-              <ChevronLeft /> Previous
-            </Button>
-            <Button
+              Previous
+            </AppButton>
+            <AppButton
               variant="outline"
               size="sm"
               disabled={meta.page >= meta.totalPages}
+              rightIcon={<ChevronRight />}
               onClick={() => onPageChange?.(meta.page + 1)}
             >
-              Next <ChevronRight />
-            </Button>
+              Next
+            </AppButton>
           </div>
         </div>
       )}

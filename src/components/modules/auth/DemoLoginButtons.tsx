@@ -1,7 +1,7 @@
 "use client";
 
-import { ShieldCheck, Truck, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { ShieldCheck, Truck, User } from "lucide-react";
 import { useState } from "react";
 
 import { AppButton } from "@/components/shared/AppButton";
@@ -25,10 +25,7 @@ export function DemoLoginButtons() {
 
   const handleDemoLogin = (role: Role, email: string) => {
     setPendingRole(role);
-    login.mutate(
-      { email, password: DEMO_PASSWORD },
-      { onSettled: () => setPendingRole(null) },
-    );
+    login.mutate({ email, password: DEMO_PASSWORD }, { onSettled: () => setPendingRole(null) });
   };
 
   return (

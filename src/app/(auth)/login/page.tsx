@@ -4,8 +4,14 @@ import Link from "next/link";
 import { DemoLoginButtons } from "@/components/modules/auth/DemoLoginButtons";
 import { LoginForm } from "@/components/modules/auth/LoginForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Log in" };
+export const metadata: Metadata = pageMetadata({
+  title: "Log in",
+  description:
+    "Log in to book parcels, pay securely and track every delivery — or try a one-click demo account.",
+  path: "/login",
+});
 
 export default function LoginPage() {
   return (

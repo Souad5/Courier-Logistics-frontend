@@ -1,23 +1,72 @@
 import { ArrowRight, Boxes, Truck, UserCheck } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { TrackParcelForm } from "@/components/modules/parcels/TrackParcelForm";
+import { AppButton } from "@/components/shared/AppButton";
 import { FadeIn } from "@/components/shared/FadeIn";
-import { Button } from "@/components/ui/button";
+import { JsonLd } from "@/components/shared/JsonLd";
 import { Card, CardContent } from "@/components/ui/card";
 import { FEATURES } from "@/config/content";
 import { siteConfig } from "@/config/site";
+import { defaultTitle, pageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = pageMetadata({
+  title: defaultTitle,
+  absoluteTitle: true,
+  description:
+    "Book, pay for and track parcels online. Transparent zone-based pricing, live tracking and photo proof of delivery.",
+  path: "/",
+});
+
+// Structured data: tells search engines who we are and that the site offers
+// tracking-number search (eligible for a sitelinks search box).
+const structuredData = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: siteConfig.name,
+    url: siteConfig.url,
+    logo: `${siteConfig.url}/og`,
+    email: siteConfig.contactEmail,
+    description: siteConfig.description,
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: siteConfig.name,
+    url: siteConfig.url,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: { "@type": "EntryPoint", urlTemplate: `${siteConfig.url}/track/{tracking_number}` },
+      "query-input": "required name=tracking_number",
+    },
+  },
+];
 
 const STEPS = [
-  { icon: Boxes, title: "Book & pay", text: "Create a parcel, see the fee instantly, pay securely with Stripe." },
-  { icon: UserCheck, title: "We assign a courier", text: "An available courier is matched to your parcel and hub." },
-  { icon: Truck, title: "Track to the door", text: "Follow every scan until it's delivered — with photo proof." },
+  {
+    icon: Boxes,
+    title: "Book & pay",
+    text: "Create a parcel, see the fee instantly, pay securely with Stripe.",
+  },
+  {
+    icon: UserCheck,
+    title: "We assign a courier",
+    text: "An available courier is matched to your parcel and hub.",
+  },
+  {
+    icon: Truck,
+    title: "Track to the door",
+    text: "Follow every scan until it's delivered — with photo proof.",
+  },
 ];
 
 export default function HomePage() {
   return (
     <>
-      <section className="from-primary/5 border-b bg-gradient-to-b to-transparent">
+      <JsonLd data={structuredData} />
+      <section className="from-primary/5 border-b bg-linear-to-b to-transparent">
         <div className="container mx-auto flex flex-col items-center gap-6 px-4 py-20 text-center md:py-28">
           <FadeIn className="space-y-4">
             <p className="text-primary text-sm font-medium">Courier & logistics, simplified</p>
@@ -32,14 +81,14 @@ export default function HomePage() {
             <TrackParcelForm />
           </FadeIn>
           <FadeIn delay={0.2} className="flex flex-wrap justify-center gap-3">
-            <Button asChild size="lg">
+            <AppButton asChild size="lg">
               <Link href="/register">
                 Send a parcel <ArrowRight />
               </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
+            </AppButton>
+            <AppButton asChild size="lg" variant="outline">
               <Link href="/pricing">See pricing</Link>
-            </Button>
+            </AppButton>
           </FadeIn>
         </div>
       </section>
@@ -82,12 +131,12 @@ export default function HomePage() {
           Create a free account as a customer — or join as a courier and start delivering.
         </p>
         <div className="mt-6 flex justify-center gap-3">
-          <Button asChild size="lg">
+          <AppButton asChild size="lg">
             <Link href="/register">Create account</Link>
-          </Button>
-          <Button asChild size="lg" variant="outline">
+          </AppButton>
+          <AppButton asChild size="lg" variant="outline">
             <Link href="/login">Try a demo account</Link>
-          </Button>
+          </AppButton>
         </div>
       </section>
     </>

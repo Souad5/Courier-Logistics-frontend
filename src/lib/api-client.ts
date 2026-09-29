@@ -40,7 +40,9 @@ export function onSessionExpired(listener: () => void): () => void {
 }
 
 function buildUrl(path: string, query?: RequestOptions["query"]): string {
-  const url = new URL(`${API_BASE_URL}${path}`);
+  // API_BASE_URL is relative ("/api/v1") in dev, so resolve it against the page.
+  const origin = typeof window === "undefined" ? "http://localhost" : window.location.origin;
+  const url = new URL(`${API_BASE_URL}${path}`, origin);
   for (const [key, value] of Object.entries(query ?? {})) {
     if (value !== undefined && value !== null && value !== "") {
       url.searchParams.set(key, String(value));
@@ -139,7 +141,7 @@ async function request<T>(
 
   const payload = await parseBody<T>(response);
 
-  if (!response.ok || !payload || !payload.success) {
+  if (!response.ok || !payload?.success) {
     throw new ApiClientError(
       response.status,
       payload?.message ?? `Request failed with status ${response.status}.`,

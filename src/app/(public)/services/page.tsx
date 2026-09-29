@@ -3,8 +3,14 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FEATURES, PARCEL_TYPE_INFO } from "@/config/content";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Services" };
+export const metadata: Metadata = pageMetadata({
+  title: "Services",
+  description:
+    "Door-to-door delivery for documents, parcels, fragile and perishable goods — with live tracking, proof of delivery and smart retries.",
+  path: "/services",
+});
 
 export default function ServicesPage() {
   return (

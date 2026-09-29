@@ -49,8 +49,18 @@ export function AdminOverview() {
           icon={CircleDollarSign}
           loading={isLoading}
         />
-        <StatCard title="Total parcels" value={stats?.totalParcels ?? 0} icon={Boxes} loading={isLoading} />
-        <StatCard title="Customers" value={stats?.totalCustomers ?? 0} icon={Users} loading={isLoading} />
+        <StatCard
+          title="Total parcels"
+          value={stats?.totalParcels ?? 0}
+          icon={Boxes}
+          loading={isLoading}
+        />
+        <StatCard
+          title="Customers"
+          value={stats?.totalCustomers ?? 0}
+          icon={Users}
+          loading={isLoading}
+        />
         <StatCard
           title="Couriers"
           value={stats?.totalCouriers ?? 0}
@@ -58,9 +68,24 @@ export function AdminOverview() {
           icon={Truck}
           loading={isLoading}
         />
-        <StatCard title="Delivered" value={stats?.deliveredParcels ?? 0} icon={PackageCheck} loading={isLoading} />
-        <StatCard title="Pending" value={stats?.pendingParcels ?? 0} icon={Timer} loading={isLoading} />
-        <StatCard title="Cancelled" value={stats?.cancelledParcels ?? 0} icon={Ban} loading={isLoading} />
+        <StatCard
+          title="Delivered"
+          value={stats?.deliveredParcels ?? 0}
+          icon={PackageCheck}
+          loading={isLoading}
+        />
+        <StatCard
+          title="Pending"
+          value={stats?.pendingParcels ?? 0}
+          icon={Timer}
+          loading={isLoading}
+        />
+        <StatCard
+          title="Cancelled"
+          value={stats?.cancelledParcels ?? 0}
+          icon={Ban}
+          loading={isLoading}
+        />
         <StatCard
           title="Returned"
           value={stats?.returnedParcels ?? 0}

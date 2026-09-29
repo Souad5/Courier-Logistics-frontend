@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  type Control,
-  type FieldPath,
-  type FieldValues,
-  useController,
-} from "react-hook-form";
+import { type Control, type FieldPath, type FieldValues, useController } from "react-hook-form";
 
 import { AppInput, type AppInputProps } from "./AppInput";
 import { AppSelect, type AppSelectProps } from "./AppSelect";
@@ -31,7 +26,10 @@ export function FormInput<T extends FieldValues, N extends FieldPath<T>>({
   name,
   ...props
 }: ControlProps<T, N> & Omit<AppInputProps, Bound>) {
-  const { field: { ref, value, onChange, onBlur, name: fieldName }, fieldState } = useController({
+  const {
+    field: { ref, value, onChange, onBlur, name: fieldName },
+    fieldState,
+  } = useController({
     control,
     name,
   });
@@ -64,7 +62,10 @@ export function FormTextarea<T extends FieldValues, N extends FieldPath<T>>({
   name,
   ...props
 }: ControlProps<T, N> & Omit<AppTextareaProps, Bound>) {
-  const { field: { ref, value, onChange, onBlur, name: fieldName }, fieldState } = useController({
+  const {
+    field: { ref, value, onChange, onBlur, name: fieldName },
+    fieldState,
+  } = useController({
     control,
     name,
   });
@@ -82,12 +83,20 @@ export function FormTextarea<T extends FieldValues, N extends FieldPath<T>>({
   );
 }
 
-export function FormSelect<T extends FieldValues, N extends FieldPath<T>, V extends string = string>({
+export function FormSelect<
+  T extends FieldValues,
+  N extends FieldPath<T>,
+  V extends string = string,
+>({
   control,
   name,
   ...props
-}: ControlProps<T, N> & Omit<AppSelectProps<V>, "name" | "value" | "onValueChange" | "onBlur" | "error">) {
-  const { field: { value, onChange, onBlur, name: fieldName }, fieldState } = useController({
+}: ControlProps<T, N> &
+  Omit<AppSelectProps<V>, "name" | "value" | "onValueChange" | "onBlur" | "error">) {
+  const {
+    field: { value, onChange, onBlur, name: fieldName },
+    fieldState,
+  } = useController({
     control,
     name,
   });

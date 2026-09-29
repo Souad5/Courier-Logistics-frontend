@@ -8,10 +8,11 @@ export const metadata: Metadata = { title: "Audit Logs" };
 export default function AdminAuditLogsPage() {
   return (
     <>
-      <PageHeader title="Audit Logs" description="History of critical actions across the platform." />
-      <ComingSoon
-        endpoint="GET /admin/audit-logs"
+      <PageHeader
+        title="Audit Logs"
+        description="History of critical actions across the platform."
       />
+      <ComingSoon endpoint="GET /admin/audit-logs" />
     </>
   );
 }

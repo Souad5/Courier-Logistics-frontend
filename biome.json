@@ -1,0 +1,48 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "includes": ["**", "!**/node_modules", "!**/.next", "!**/next-env.d.ts", "!**/*.d.ts"]
+  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": { "quoteStyle": "double", "semicolons": "always", "trailingCommas": "all" }
+  },
+  "css": {
+    "parser": { "tailwindDirectives": true }
+  },
+  "linter": {
+    "enabled": true,
+    "domains": { "react": "recommended", "next": "recommended" },
+    "rules": {
+      "preset": "recommended",
+      "correctness": {
+        "noUnusedVariables": "warn",
+        "noUnusedImports": "warn"
+      },
+      "style": {
+        "noNonNullAssertion": "off"
+      },
+      "suspicious": {
+        "noExplicitAny": "off"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["src/components/ui/**"],
+      "linter": {
+        "rules": {
+          "suspicious": { "noArrayIndexKey": "off" },
+          "a11y": { "useSemanticElements": "off", "useFocusableInteractive": "off" }
+        }
+      }
+    }
+  ]
+}

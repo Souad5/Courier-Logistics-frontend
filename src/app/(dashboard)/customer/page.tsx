@@ -10,7 +10,10 @@ export const metadata: Metadata = { title: "My Activity" };
 export default function CustomerHomePage() {
   return (
     <>
-      <PageHeader title="My Activity" description="Your recent parcels. Pay for pending ones to get them moving." />
+      <PageHeader
+        title="My Activity"
+        description="Your recent parcels. Pay for pending ones to get them moving."
+      />
       {/* MyParcelsTable keeps pagination/search in the URL (useSearchParams). */}
       <Suspense fallback={<Skeleton className="h-72 rounded-xl" />}>
         <MyParcelsTable showPayAction />
