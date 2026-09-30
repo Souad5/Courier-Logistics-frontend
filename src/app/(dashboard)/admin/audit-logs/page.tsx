@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
-import { ComingSoon } from "@/components/shared/ComingSoon";
+import { AuditLogsTable } from "@/components/modules/admin/AuditLogsTable";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata: Metadata = { title: "Audit Logs" };
 
@@ -12,7 +14,9 @@ export default function AdminAuditLogsPage() {
         title="Audit Logs"
         description="History of critical actions across the platform."
       />
-      <ComingSoon endpoint="GET /admin/audit-logs" />
+      <Suspense fallback={<Skeleton className="h-96 rounded-xl" />}>
+        <AuditLogsTable />
+      </Suspense>
     </>
   );
 }

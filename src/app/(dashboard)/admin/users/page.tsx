@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
-import { ComingSoon } from "@/components/shared/ComingSoon";
+import { UsersTable } from "@/components/modules/admin/UsersTable";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata: Metadata = { title: "Users" };
 
@@ -9,7 +11,9 @@ export default function AdminUsersPage() {
   return (
     <>
       <PageHeader title="Users" description="Browse users and change roles." />
-      <ComingSoon endpoint="GET /users · PATCH /users/:id/role" />
+      <Suspense fallback={<Skeleton className="h-96 rounded-xl" />}>
+        <UsersTable />
+      </Suspense>
     </>
   );
 }

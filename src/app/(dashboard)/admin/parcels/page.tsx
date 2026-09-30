@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
-import { ComingSoon } from "@/components/shared/ComingSoon";
+import { AllParcelsTable } from "@/components/modules/parcels/AllParcelsTable";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata: Metadata = { title: "Parcels" };
 
@@ -12,7 +14,9 @@ export default function AdminParcelsPage() {
         title="Parcels"
         description="Manage all parcels, assign couriers and update statuses."
       />
-      <ComingSoon endpoint="GET /parcels · PATCH /parcels/:id/assign · PATCH /parcels/:id/status" />
+      <Suspense fallback={<Skeleton className="h-96 rounded-xl" />}>
+        <AllParcelsTable />
+      </Suspense>
     </>
   );
 }
