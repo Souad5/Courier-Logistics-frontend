@@ -33,3 +33,25 @@ export function initials(name: string | null | undefined): string {
     .map((part) => part[0]?.toUpperCase())
     .join("");
 }
+
+/** 1200 → "1.2K" — for chart axes and tight KPI spaces. */
+export function formatCompact(value: number): string {
+  return new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(
+    value,
+  );
+}
+
+/** "5 minutes ago" style label. */
+export function formatRelativeTime(value: string | Date): string {
+  const seconds = Math.round((new Date(value).getTime() - Date.now()) / 1000);
+  const units: Array<[Intl.RelativeTimeFormatUnit, number]> = [
+    ["day", 86400],
+    ["hour", 3600],
+    ["minute", 60],
+  ];
+  const formatter = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+  for (const [unit, size] of units) {
+    if (Math.abs(seconds) >= size) return formatter.format(Math.round(seconds / size), unit);
+  }
+  return formatter.format(seconds, "second");
+}

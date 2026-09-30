@@ -1,42 +1,36 @@
 "use client";
 
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, useWatch } from "react-hook-form";
+import { z } from "zod";
 
 import { AppButton } from "@/components/shared/AppButton";
 import { AppDialog } from "@/components/shared/AppDialog";
 import { FormSelect, FormTextarea } from "@/components/shared/form";
 import { useUpdateParcelStatus } from "@/hooks/useParcels";
-import type { UpdateParcelStatusInput, Parcel } from "@/types";
-import { ALLOWED_TRANSITIONS } from "@/types/enums";
+import type { Parcel } from "@/types";
+import { ALLOWED_TRANSITIONS, PARCEL_STATUSES } from "@/types/enums";
 
-export function StatusUpdateDialog({
-  parcel,
-  onClose,
-}: {
-  parcel: Parcel;
-  onClose: () => void;
-}) {
-  const { control, handleSubmit, reset, watch } = useForm<UpdateParcelStatusInput>({
-    defaultValues: {
-      status: parcel.status,
-      location: "",
-      note: "",
-    },
+const statusSchema = z.object({
+  status: z.enum(PARCEL_STATUSES),
+  note: z.union([z.literal(""), z.string().trim().min(2, "At least 2 characters").max(300)]),
+});
+
+type StatusValues = z.infer<typeof statusSchema>;
+
+export function StatusUpdateDialog({ parcel, onClose }: { parcel: Parcel; onClose: () => void }) {
+  const { control, handleSubmit } = useForm<StatusValues>({
+    resolver: zodResolver(statusSchema),
+    defaultValues: { status: parcel.status, note: "" },
   });
 
   const update = useUpdateParcelStatus();
-  const currentStatus = watch("status");
+  const currentStatus = useWatch({ control, name: "status" });
   const allowedNextStatuses = ALLOWED_TRANSITIONS[parcel.status] || [];
 
-  const onSubmit = (data: UpdateParcelStatusInput) => {
-    update.mutate({ id: parcel.id, ...data }, { onSuccess: () => onClose() });
+  const onSubmit = ({ status, note }: StatusValues) => {
+    update.mutate({ id: parcel.id, status, ...(note && { note }) }, { onSuccess: () => onClose() });
   };
-
-  useEffect(() => {
-    if (!update.isPending && !update.isSuccess) return;
-    if (update.isSuccess) reset();
-  }, [update.isSuccess, update.isPending, reset]);
 
   return (
     <AppDialog

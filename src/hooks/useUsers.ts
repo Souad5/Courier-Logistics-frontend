@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { ENDPOINTS } from "@/config/api.config";
 import { apiClient, getErrorMessage } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
-import type { ListQuery, UsersPayload } from "@/types";
+import { useAuthStore } from "@/store/auth.store";
+import type { ListQuery, UpdateProfileInput, UserPayload, UsersPayload } from "@/types";
 import type { Role } from "@/types/enums";
 
 export function useUsers(query: ListQuery & Record<string, string | number | undefined> = {}) {
@@ -30,6 +31,32 @@ export function useChangeUserRole() {
     onSuccess: (result) => {
       toast.success(result.message);
       invalidate();
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
+  });
+}
+
+export function useUpdateProfile() {
+  const setUser = useAuthStore((s) => s.setUser);
+  return useMutation({
+    mutationFn: (input: UpdateProfileInput) =>
+      apiClient.patch<UserPayload>(ENDPOINTS.users.me, input),
+    onSuccess: (result) => {
+      setUser(result.data.user);
+      toast.success(result.message);
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
+  });
+}
+
+export function useUpdateAvailability() {
+  const setUser = useAuthStore((s) => s.setUser);
+  return useMutation({
+    mutationFn: (isAvailable: boolean) =>
+      apiClient.patch<UserPayload>(ENDPOINTS.users.myAvailability, { isAvailable }),
+    onSuccess: (result) => {
+      setUser(result.data.user);
+      toast.success(result.message);
     },
     onError: (error) => toast.error(getErrorMessage(error)),
   });

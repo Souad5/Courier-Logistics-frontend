@@ -1,25 +1,33 @@
 "use client";
 
-import { useEffect } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 import { AppButton } from "@/components/shared/AppButton";
 import { AppDialog } from "@/components/shared/AppDialog";
 import { FormInput, FormTextarea } from "@/components/shared/form";
 import { useCreateHub, useUpdateHub } from "@/hooks/useHubs";
 import type { Hub } from "@/types";
-import type { HubInput } from "@/types";
 
-type HubFormData = {
-  name: string;
-  code: string;
-  zoneCode: string;
-  zoneName: string;
-  address: string;
-  city?: string;
-  lat?: number;
-  lng?: number;
-};
+// Mirrors courier-backend hub.validation.ts; city accepts "" in the form.
+const hubSchema = z.object({
+  name: z.string().trim().min(2, "At least 2 characters").max(100),
+  code: z
+    .string()
+    .trim()
+    .min(2, "At least 2 characters")
+    .max(20)
+    .regex(/^[A-Z0-9_-]+$/i, "Letters, numbers, dashes and underscores only"),
+  zoneCode: z.string().trim().min(2, "At least 2 characters").max(30),
+  zoneName: z.string().trim().min(2, "At least 2 characters").max(60),
+  address: z.string().trim().min(3, "At least 3 characters").max(200),
+  city: z.union([z.literal(""), z.string().trim().min(2, "At least 2 characters").max(60)]),
+  lat: z.number("Enter a number").min(-90).max(90).optional(),
+  lng: z.number("Enter a number").min(-180).max(180).optional(),
+});
+
+type HubFormData = z.infer<typeof hubSchema>;
 
 export function HubFormDialog({ hub, onClose }: { hub?: Hub; onClose: () => void }) {
   const isEdit = Boolean(hub?.id);
@@ -27,7 +35,8 @@ export function HubFormDialog({ hub, onClose }: { hub?: Hub; onClose: () => void
   const update = useUpdateHub();
   const mutation = isEdit ? update : create;
 
-  const { control, handleSubmit, reset } = useForm<HubFormData>({
+  const { control, handleSubmit } = useForm<HubFormData>({
+    resolver: zodResolver(hubSchema),
     defaultValues: hub
       ? {
           name: hub.name,
@@ -42,17 +51,14 @@ export function HubFormDialog({ hub, onClose }: { hub?: Hub; onClose: () => void
       : undefined,
   });
 
-  const onSubmit = (data: HubFormData) => {
+  const onSubmit = ({ city, ...rest }: HubFormData) => {
+    const data = { ...rest, ...(city && { city }) };
     if (isEdit && hub?.id) {
       update.mutate({ id: hub.id, ...data }, { onSuccess: () => onClose() });
     } else {
       create.mutate(data, { onSuccess: () => onClose() });
     }
   };
-
-  useEffect(() => {
-    if (mutation.isSuccess) reset();
-  }, [mutation.isSuccess, reset]);
 
   return (
     <AppDialog

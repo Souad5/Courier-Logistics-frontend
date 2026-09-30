@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { ENDPOINTS } from "@/config/api.config";
 import { apiClient, getErrorMessage } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
-import type { HubPayload, HubInput, HubsPayload, ListQuery } from "@/types";
+import type { HubInput, HubPayload, HubsPayload, ListQuery } from "@/types";
 
 /** Public hub list (GET /hubs). */
 export function useHubs(query: ListQuery & Record<string, string | number | undefined> = {}) {

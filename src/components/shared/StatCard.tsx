@@ -7,28 +7,27 @@ import { cn } from "@/lib/utils";
 interface StatCardProps {
   title: string;
   value: string | number;
-  icon: LucideIcon;
+  icon?: LucideIcon;
   hint?: string;
   loading?: boolean;
   className?: string;
 }
 
+/** Typography-led metric tile: the number carries the weight, the icon only labels. */
 export function StatCard({ title, value, icon: Icon, hint, loading, className }: StatCardProps) {
   return (
-    <Card className={cn("gap-0 py-5", className)}>
-      <CardContent className="flex items-start justify-between gap-4">
-        <div className="space-y-1">
-          <p className="text-muted-foreground text-sm">{title}</p>
-          {loading ? (
-            <Skeleton className="h-8 w-24" />
-          ) : (
-            <p className="text-2xl font-semibold tracking-tight">{value}</p>
-          )}
-          {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
+    <Card className={cn("gap-0 py-4", className)}>
+      <CardContent className="space-y-2">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-muted-foreground text-xs font-medium">{title}</p>
+          {Icon && <Icon className="text-muted-foreground size-4" aria-hidden />}
         </div>
-        <div className="bg-primary/10 text-primary rounded-lg p-2.5">
-          <Icon className="size-5" />
-        </div>
+        {loading ? (
+          <Skeleton className="h-8 w-24" />
+        ) : (
+          <p className="text-2xl font-semibold tracking-tight tabular-nums">{value}</p>
+        )}
+        {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
       </CardContent>
     </Card>
   );

@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
+import { useState } from "react";
+import { ParcelFilters } from "@/components/modules/parcels/ParcelFilters";
+import { ProofOfDeliveryDialog } from "@/components/modules/parcels/ProofOfDeliveryDialog";
 import { StatusUpdateDialog } from "@/components/modules/parcels/StatusUpdateDialog";
+import { AppButton } from "@/components/shared/AppButton";
+import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
+import { ErrorState } from "@/components/shared/ErrorState";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { useDebounce } from "@/hooks/useDebounce";
 import { usePagination } from "@/hooks/usePagination";
 import { useMyParcels } from "@/hooks/useParcels";
 import { getErrorMessage } from "@/lib/api-client";
@@ -18,10 +20,12 @@ import type { Parcel } from "@/types";
  * Must render inside <Suspense>.
  */
 export function CourierTasksTable() {
-  const { query, setPage } = usePagination();
+  const pagination = usePagination();
+  const { query, setPage } = pagination;
   const [updateStatusParcel, setUpdateStatusParcel] = useState<Parcel | null>(null);
+  const [proofParcel, setProofParcel] = useState<Parcel | null>(null);
 
-  const { data, isLoading, isFetching, error } = useMyParcels(query);
+  const { data, isLoading, isFetching, error, refetch } = useMyParcels(query);
 
   const columns: DataTableColumn<Parcel>[] = [
     {
@@ -48,17 +52,21 @@ export function CourierTasksTable() {
       header: "",
       className: "text-right",
       cell: (p) => (
-        <button
-          className="text-xs text-amber-600 hover:underline"
-          onClick={() => setUpdateStatusParcel(p)}
-        >
-          Update Status
-        </button>
+        <div className="flex items-center justify-end gap-1">
+          {(p.status === "OUT_FOR_DELIVERY" || p.status === "DELIVERED") && (
+            <AppButton variant="link" size="sm" onClick={() => setProofParcel(p)}>
+              Proof photo
+            </AppButton>
+          )}
+          <AppButton variant="link" size="sm" onClick={() => setUpdateStatusParcel(p)}>
+            Update status
+          </AppButton>
+        </div>
       ),
     },
   ];
 
-  if (error) return <p className="text-destructive text-sm">{getErrorMessage(error)}</p>;
+  if (error) return <ErrorState message={getErrorMessage(error)} onRetry={() => refetch()} />;
 
   return (
     <>
@@ -70,7 +78,12 @@ export function CourierTasksTable() {
         meta={data?.meta}
         onPageChange={setPage}
         emptyMessage="No tasks assigned to you yet."
+        emptyDescription="Parcels an admin assigns to you will show up here."
+        toolbar={<ParcelFilters pagination={pagination} searchable={false} />}
       />
+      {proofParcel && (
+        <ProofOfDeliveryDialog parcel={proofParcel} onClose={() => setProofParcel(null)} />
+      )}
       {updateStatusParcel && (
         <StatusUpdateDialog
           parcel={updateStatusParcel}

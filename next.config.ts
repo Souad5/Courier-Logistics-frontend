@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   // react-hooks rules report code the compiler has to skip.
   reactCompiler: true,
 
+  // Proof-of-delivery photos are served from Cloudinary.
+  images: { remotePatterns: [{ protocol: "https", hostname: "res.cloudinary.com" }] },
+
   // Dev only: lets the dev server be opened from other hosts on the LAN
   // (e.g. http://192.168.0.175:3000, or a phone on the same Wi-Fi). Without
   // this, Next blocks its dev resources for non-localhost origins and every

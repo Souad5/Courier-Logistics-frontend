@@ -1,17 +1,10 @@
 "use client";
 
-import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
-
 import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
-import { AppInput } from "@/components/shared/form";
-import { useDebounce } from "@/hooks/useDebounce";
-import { usePagination } from "@/hooks/usePagination";
-import { useUsers, useChangeUserRole } from "@/hooks/useUsers";
-import { getErrorMessage } from "@/lib/api-client";
-import { formatDate } from "@/lib/utils";
-import type { User } from "@/types";
-import { ROLES } from "@/types/enums";
+import { ErrorState } from "@/components/shared/ErrorState";
+import { FilterSelect } from "@/components/shared/FilterSelect";
+import { SearchInput } from "@/components/shared/SearchInput";
+import { SortSelect } from "@/components/shared/SortSelect";
 import {
   Select,
   SelectContent,
@@ -19,21 +12,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { usePagination } from "@/hooks/usePagination";
+import { useChangeUserRole, useUsers } from "@/hooks/useUsers";
+import { getErrorMessage } from "@/lib/api-client";
+import { formatDate, humanize } from "@/lib/utils";
+import type { User } from "@/types";
+import { ROLES, type Role } from "@/types/enums";
 
 /**
  * Admin view: all users with role change capability.
  * Must render inside <Suspense>.
  */
 export function UsersTable() {
-  const { query, setPage, setSearch } = usePagination();
-  const [search, setSearchInput] = useState(String(query.search ?? ""));
-  const debouncedSearch = useDebounce(search);
+  const { query, setPage, setSearch, setFilter } = usePagination();
 
-  useEffect(() => {
-    if (debouncedSearch !== (query.search ?? "")) setSearch(debouncedSearch);
-  }, [debouncedSearch, query.search, setSearch]);
-
-  const { data, isLoading, isFetching, error } = useUsers(query);
+  const { data, isLoading, isFetching, error, refetch } = useUsers(query);
   const changeRole = useChangeUserRole();
 
   const columns: DataTableColumn<User>[] = [
@@ -43,7 +36,10 @@ export function UsersTable() {
       key: "role",
       header: "Role",
       cell: (u) => (
-        <Select defaultValue={u.role} onValueChange={(role) => changeRole.mutate({ userId: u.id, role: role as any })}>
+        <Select
+          defaultValue={u.role}
+          onValueChange={(role) => changeRole.mutate({ userId: u.id, role: role as Role })}
+        >
           <SelectTrigger className="w-32">
             <SelectValue />
           </SelectTrigger>
@@ -61,7 +57,7 @@ export function UsersTable() {
     { key: "created", header: "Joined", cell: (u) => formatDate(u.createdAt) },
   ];
 
-  if (error) return <p className="text-destructive text-sm">{getErrorMessage(error)}</p>;
+  if (error) return <ErrorState message={getErrorMessage(error)} onRetry={() => refetch()} />;
 
   return (
     <DataTable
@@ -72,16 +68,27 @@ export function UsersTable() {
       meta={data?.meta}
       onPageChange={setPage}
       emptyMessage="No users yet."
+      emptyDescription="Try changing the search or role filter."
       toolbar={
-        <AppInput
-          type="search"
-          value={search}
-          onChange={(event) => setSearchInput(event.target.value)}
-          placeholder="Search by name or email…"
-          aria-label="Search users"
-          leftIcon={<Search />}
-          containerClassName="w-full max-w-xs"
-        />
+        <>
+          <SearchInput
+            value={String(query.search ?? "")}
+            onSearch={setSearch}
+            placeholder="Search by name or email…"
+            label="Search users"
+          />
+          <FilterSelect
+            label="Filter by role"
+            value={query.role as string | undefined}
+            allLabel="All roles"
+            options={ROLES.map((r) => ({ value: r, label: humanize(r) }))}
+            onChange={(v) => setFilter("role", v)}
+          />
+          <SortSelect
+            value={query.sortOrder as string | undefined}
+            onChange={(v) => setFilter("sortOrder", v)}
+          />
+        </>
       }
     />
   );

@@ -112,4 +112,14 @@ Don't add react-helmet. SEO comes from the Next.js Metadata API.
   - `shared/form` has `AppInput`, `AppTextarea`, `AppSelect` and `AppField` (the label/description/error frame). `FormInput`, `FormTextarea` and `FormSelect` are the same fields bound to react-hook-form: pass `control` and `name`.
   - These are built on shadcn's `field` components, because shadcn no longer ships a `form` component.
 - Use zod 4 APIs (`z.email()`, `z.url()`). zod is pinned to v4 in `package.json`, because the shadcn dependency tree otherwise resolves v3.
-- Scaffolded dashboard pages render `<ComingSoon endpoint=…>`. Replace that with the real feature, keeping `PageHeader` at the top.
+- Dashboard pages start with `PageHeader`; public content pages start with `PublicPageHeader` (`shared/SectionHeading.tsx`).
+
+## Visual language
+
+- **Accent.** `--primary` is `#F0F8FF` in both themes, so it is near-white in light mode: primary buttons rely on their `border-signal` tint, and text never uses `text-primary`. For visible accent strokes (active nav bars, progress, dots, checkmarks) use `signal` (`bg-signal`, `text-signal`): steel blue in light mode, `#F0F8FF` in dark. Charts use `--chart-1…5`; `--chart-1` is the signal color.
+- **Backgrounds stay neutral.** Don't tint `--background`, `--muted`, `--secondary`, `--accent` or `--sidebar`.
+- **Utilities in `globals.css`:** `eyebrow` (small mono uppercase label), `surface-ink` (inverted band — use `opacity-*`, not `text-muted-foreground`, for secondary text inside it), `bg-grid` (hero only).
+- **Restraint over cards.** Prefer hairline grids (`bg-border grid gap-px` with `bg-background` cells), divided lists and typography for hierarchy; use `Card` for genuine panels (charts, forms, tables).
+- **Motion** is Framer Motion in small client components (`FadeIn`, landing pieces). Always pass `animate` even under reduced motion — the server renders the hidden initial state before the preference is known, so an element without `animate` stays invisible. No infinite loops.
+- **Charts** go through shadcn `ChartContainer` (`components/ui/chart.tsx`). Use `type="monotone"` for count/revenue areas (`natural` overshoots below zero), and never stack series where one is a subset of another (e.g. delivered ⊂ booked).
+- **Admin overview** reads `GET /admin/dashboard-stats?days=7|30|90|365`; `stats.period` (timeline + previous-period totals) is optional so older backend deploys degrade to totals only. The selected range lives in `?days=`.

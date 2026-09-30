@@ -1,45 +1,43 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 import { AppButton } from "@/components/shared/AppButton";
 import { AppDialog } from "@/components/shared/AppDialog";
 import { FormSelect } from "@/components/shared/form";
 import { useAssignParcel } from "@/hooks/useParcels";
 import { useUsers } from "@/hooks/useUsers";
-import type { AssignParcelInput, Parcel } from "@/types";
+import type { Parcel } from "@/types";
 
-export function AssignParcelDialog({
-  parcel,
-  onClose,
-}: {
-  parcel: Parcel;
-  onClose: () => void;
-}) {
-  const { control, handleSubmit, reset } = useForm<AssignParcelInput>({
+const assignSchema = z.object({
+  courierId: z.string().min(1, "Select a courier"),
+  destinationHubId: z.string(),
+});
+
+type AssignValues = z.infer<typeof assignSchema>;
+
+export function AssignParcelDialog({ parcel, onClose }: { parcel: Parcel; onClose: () => void }) {
+  const { control, handleSubmit } = useForm<AssignValues>({
+    resolver: zodResolver(assignSchema),
     defaultValues: {
       courierId: "",
       destinationHubId: parcel.destinationHubId ?? "",
     },
   });
 
-  const { data: usersData } = useUsers({ limit: 1000 });
+  const { data: usersData, isLoading: couriersLoading } = useUsers({ role: "COURIER", limit: 100 });
   const assign = useAssignParcel();
 
-  const couriers = useMemo(
-    () => usersData?.data.users.filter((u) => u.role === "COURIER") ?? [],
-    [usersData],
-  );
+  const couriers = usersData?.data.users ?? [];
 
-  const onSubmit = (data: AssignParcelInput) => {
-    assign.mutate({ id: parcel.id, ...data }, { onSuccess: () => onClose() });
+  const onSubmit = ({ courierId, destinationHubId }: AssignValues) => {
+    assign.mutate(
+      { id: parcel.id, courierId, ...(destinationHubId && { destinationHubId }) },
+      { onSuccess: () => onClose() },
+    );
   };
-
-  useEffect(() => {
-    if (!assign.isPending && !assign.isSuccess) return;
-    if (assign.isSuccess) reset();
-  }, [assign.isSuccess, assign.isPending, reset]);
 
   return (
     <AppDialog
@@ -58,7 +56,7 @@ export function AssignParcelDialog({
           control={control}
           name="courierId"
           label="Courier"
-          placeholder="Select a courier"
+          placeholder={couriersLoading ? "Loading couriers…" : "Select a courier"}
           options={couriers.map((c) => ({ label: c.name, value: c.id }))}
           required
         />

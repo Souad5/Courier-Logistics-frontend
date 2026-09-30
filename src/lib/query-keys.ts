@@ -22,7 +22,7 @@ export const queryKeys = {
     detail: (id: string) => ["payments", id] as const,
   },
   admin: {
-    stats: ["admin", "stats"] as const,
+    stats: (days: number) => ["admin", "stats", days] as const,
     auditLogs: (query: ListQuery & Record<string, unknown>) =>
       ["admin", "audit-logs", query] as const,
   },

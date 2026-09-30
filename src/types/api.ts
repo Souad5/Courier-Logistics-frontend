@@ -136,3 +136,9 @@ export type TrackingPayload = ParcelTracking;
 export type PaymentPayload = { payment: Payment };
 export type StatsPayload = { stats: DashboardStats };
 export type AuditLogsPayload = { logs: AuditLog[] };
+
+export interface UpdateProfileInput {
+  name?: string;
+  phone?: string;
+  avatarUrl?: string;
+}

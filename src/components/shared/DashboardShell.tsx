@@ -2,17 +2,17 @@
 
 import { Menu, PanelLeft } from "lucide-react";
 import type { ReactNode } from "react";
-
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authStorage } from "@/lib/auth-storage";
 import { humanize } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
 import { useUIStore } from "@/store/ui.store";
+import type { Role } from "@/types";
 
 import { AppButton } from "./AppButton";
 import { Logo } from "./Logo";
-import { Sidebar, SidebarNav } from "./Sidebar";
+import { Sidebar, SidebarNav, useActiveNavItem } from "./Sidebar";
 import { ThemeToggle } from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
 
@@ -33,7 +33,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       {role ? (
         <Sidebar role={role} collapsed={sidebarCollapsed} />
       ) : (
-        <div className="hidden w-64 border-r p-4 md:block">
+        <div className="hidden w-60 border-r p-4 md:block">
           <Skeleton className="h-8 w-32" />
         </div>
       )}
@@ -58,16 +58,16 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           >
             <PanelLeft />
           </AppButton>
-          {role && (
-            <span className="text-muted-foreground text-sm">{humanize(role)} dashboard</span>
-          )}
+          {role && <Breadcrumb role={role} />}
           <div className="ml-auto flex items-center gap-1">
             <ThemeToggle />
             <UserMenu />
           </div>
         </header>
 
-        <main className="flex-1 space-y-6 p-4 md:p-6">{children}</main>
+        <main className="mx-auto w-full max-w-[1400px] flex-1 space-y-6 p-4 md:p-6 lg:p-8">
+          {children}
+        </main>
       </div>
 
       <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
@@ -83,5 +83,22 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         </SheetContent>
       </Sheet>
     </div>
+  );
+}
+
+function Breadcrumb({ role }: { role: Role }) {
+  const current = useActiveNavItem(role);
+  return (
+    <p className="flex min-w-0 items-center gap-1.5 text-sm">
+      <span className="text-muted-foreground hidden sm:inline">{humanize(role)}</span>
+      {current && (
+        <>
+          <span className="text-muted-foreground hidden sm:inline" aria-hidden>
+            /
+          </span>
+          <span className="truncate font-medium">{current.title}</span>
+        </>
+      )}
+    </p>
   );
 }

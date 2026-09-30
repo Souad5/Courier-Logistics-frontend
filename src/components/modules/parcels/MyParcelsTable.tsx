@@ -1,13 +1,10 @@
 "use client";
 
-import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
-
+import { ParcelFilters } from "@/components/modules/parcels/ParcelFilters";
 import { PayNowButton } from "@/components/modules/payments/PayNowButton";
 import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
-import { AppInput } from "@/components/shared/form";
+import { ErrorState } from "@/components/shared/ErrorState";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { useDebounce } from "@/hooks/useDebounce";
 import { usePagination } from "@/hooks/usePagination";
 import { useMyParcels } from "@/hooks/useParcels";
 import { getErrorMessage } from "@/lib/api-client";
@@ -19,15 +16,10 @@ import type { Parcel } from "@/types";
  * customers, assigned courier for couriers). Must render inside <Suspense>.
  */
 export function MyParcelsTable({ showPayAction = false }: { showPayAction?: boolean }) {
-  const { query, setPage, setSearch } = usePagination();
-  const [search, setSearchInput] = useState(String(query.search ?? ""));
-  const debouncedSearch = useDebounce(search);
+  const pagination = usePagination();
+  const { query, setPage } = pagination;
 
-  useEffect(() => {
-    if (debouncedSearch !== (query.search ?? "")) setSearch(debouncedSearch);
-  }, [debouncedSearch, query.search, setSearch]);
-
-  const { data, isLoading, isFetching, error } = useMyParcels(query);
+  const { data, isLoading, isFetching, error, refetch } = useMyParcels(query);
 
   const columns: DataTableColumn<Parcel>[] = [
     {
@@ -62,7 +54,7 @@ export function MyParcelsTable({ showPayAction = false }: { showPayAction?: bool
     });
   }
 
-  if (error) return <p className="text-destructive text-sm">{getErrorMessage(error)}</p>;
+  if (error) return <ErrorState message={getErrorMessage(error)} onRetry={() => refetch()} />;
 
   return (
     <DataTable
@@ -73,17 +65,8 @@ export function MyParcelsTable({ showPayAction = false }: { showPayAction?: bool
       meta={data?.meta}
       onPageChange={setPage}
       emptyMessage="No parcels yet."
-      toolbar={
-        <AppInput
-          type="search"
-          value={search}
-          onChange={(event) => setSearchInput(event.target.value)}
-          placeholder="Search tracking number or receiver…"
-          aria-label="Search parcels"
-          leftIcon={<Search />}
-          containerClassName="w-full max-w-xs"
-        />
-      }
+      toolbar={<ParcelFilters pagination={pagination} />}
+      emptyDescription="Try changing the search or status filter, or book a new parcel."
     />
   );
 }

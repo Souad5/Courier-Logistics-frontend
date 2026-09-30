@@ -7,11 +7,12 @@ import { apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import type { AuditLogsPayload, ListQuery, StatsPayload } from "@/types";
 
-export function useDashboardStats() {
+export function useDashboardStats(days: number) {
   return useQuery({
-    queryKey: queryKeys.admin.stats,
-    queryFn: () => apiClient.get<StatsPayload>(ENDPOINTS.admin.stats),
+    queryKey: queryKeys.admin.stats(days),
+    queryFn: () => apiClient.get<StatsPayload>(ENDPOINTS.admin.stats, { query: { days } }),
     select: (result) => result.data.stats,
+    placeholderData: keepPreviousData,
   });
 }
 

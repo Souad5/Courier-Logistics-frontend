@@ -1,6 +1,7 @@
 "use client";
 
 import { PackageSearch } from "lucide-react";
+import Image from "next/image";
 
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,11 +60,12 @@ export function TrackingResult({ trackingNumber }: { trackingNumber: string }) {
         {parcel.proofOfDeliveryUrl && (
           <div className="space-y-2">
             <p className="text-sm font-medium">Proof of delivery</p>
-            {/* biome-ignore lint/performance/noImgElement: Cloudinary URL; a plain <img> avoids configuring next/image remote patterns */}
-            <img
+            <Image
               src={parcel.proofOfDeliveryUrl}
               alt="Proof of delivery"
-              className="max-h-72 rounded-lg border object-cover"
+              width={640}
+              height={480}
+              className="max-h-72 w-auto rounded-lg border object-cover"
             />
           </div>
         )}

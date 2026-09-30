@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import type { PaginationMeta } from "@/types";
 
 import { AppButton } from "./AppButton";
+import { EmptyState } from "./EmptyState";
 
 const SKELETON_ROWS = ["s1", "s2", "s3", "s4", "s5"];
 
@@ -34,6 +35,7 @@ interface DataTableProps<T> {
   meta?: PaginationMeta;
   onPageChange?: (page: number) => void;
   emptyMessage?: string;
+  emptyDescription?: string;
   toolbar?: ReactNode;
 }
 
@@ -46,6 +48,7 @@ export function DataTable<T>({
   meta,
   onPageChange,
   emptyMessage = "No records found.",
+  emptyDescription,
   toolbar,
 }: DataTableProps<T>) {
   const rows = data ?? [];
@@ -54,12 +57,15 @@ export function DataTable<T>({
     <div className="space-y-3">
       {toolbar && <div className="flex flex-wrap items-center gap-2">{toolbar}</div>}
 
-      <div className="rounded-lg border">
+      <div className="overflow-x-auto rounded-lg border">
         <Table>
-          <TableHeader>
-            <TableRow>
+          <TableHeader className="bg-muted/40">
+            <TableRow className="hover:bg-transparent">
               {columns.map((column) => (
-                <TableHead key={column.key} className={column.className}>
+                <TableHead
+                  key={column.key}
+                  className={cn("text-muted-foreground text-xs font-medium", column.className)}
+                >
                   {column.header}
                 </TableHead>
               ))}
@@ -78,11 +84,8 @@ export function DataTable<T>({
               ))
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="text-muted-foreground h-24 text-center"
-                >
-                  {emptyMessage}
+                <TableCell colSpan={columns.length}>
+                  <EmptyState title={emptyMessage} description={emptyDescription} />
                 </TableCell>
               </TableRow>
             ) : (

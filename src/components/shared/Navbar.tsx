@@ -1,5 +1,6 @@
 "use client";
 
+import { useMotionValueEvent, useScroll } from "framer-motion";
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -20,22 +21,36 @@ export function Navbar() {
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const { scrollY } = useScroll();
+  // Only re-renders when crossing the threshold, not on every scroll frame.
+  useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 8));
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   return (
-    <header className="bg-background/80 sticky top-0 z-40 border-b backdrop-blur">
+    <header
+      className={cn(
+        "sticky top-0 z-40 border-b transition-[background-color,border-color] duration-200",
+        scrolled
+          ? "bg-background/80 border-border backdrop-blur-xl"
+          : "border-transparent bg-transparent",
+      )}
+    >
       <div className="container mx-auto flex h-16 items-center justify-between gap-4 px-4">
         <Logo />
 
-        <nav className="hidden items-center gap-1 md:flex">
+        <nav aria-label="Main" className="hidden items-center gap-0.5 md:flex">
           {publicNav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
+              aria-current={isActive(item.href) ? "page" : undefined}
               className={cn(
-                "hover:text-foreground rounded-md px-3 py-2 text-sm transition-colors",
-                isActive(item.href) ? "text-foreground font-medium" : "text-muted-foreground",
+                "hover:text-foreground focus-visible:ring-ring relative rounded-md px-3 py-1.5 text-sm transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                isActive(item.href)
+                  ? "text-foreground font-medium after:bg-signal after:absolute after:inset-x-3 after:-bottom-[15px] after:h-0.5 after:rounded-full"
+                  : "text-muted-foreground",
               )}
             >
               {item.title}

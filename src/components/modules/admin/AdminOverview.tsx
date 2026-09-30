@@ -1,140 +1,110 @@
 "use client";
 
-import {
-  Ban,
-  Boxes,
-  CircleDollarSign,
-  PackageCheck,
-  RotateCcw,
-  Timer,
-  TriangleAlert,
-  Truck,
-  Users,
-} from "lucide-react";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { LineChart } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import { StatCard } from "@/components/shared/StatCard";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { ErrorState } from "@/components/shared/ErrorState";
+import { Card } from "@/components/ui/card";
 import { useDashboardStats } from "@/hooks/useAdmin";
 import { getErrorMessage } from "@/lib/api-client";
-import { formatCurrency, humanize } from "@/lib/utils";
-import { PARCEL_STATUSES } from "@/types";
 
+import { ChartAreaInteractive, TIME_RANGES } from "./overview/ChartAreaInteractive";
+import { ChartCard } from "./overview/ChartCard";
+import { DashboardHeader } from "./overview/DashboardHeader";
+import { NeedsAttention } from "./overview/NeedsAttention";
+import { OverviewSkeleton } from "./overview/OverviewSkeleton";
+import { RecentActivity } from "./overview/RecentActivity";
+import { StatusDistributionChart } from "./overview/StatusDistributionChart";
+import { TotalsStrip } from "./overview/TotalsStrip";
+
+const DEFAULT_DAYS = 30;
+
+/** Admin command center. The time range lives in the URL (?days=) and is sent to the API. Must render inside <Suspense>. */
 export function AdminOverview() {
-  const { data: stats, isLoading, error } = useDashboardStats();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  if (error) {
+  const requested = Number(searchParams.get("days"));
+  const days = TIME_RANGES.some((r) => r.days === requested) ? requested : DEFAULT_DAYS;
+
+  const setDays = (next: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (next === DEFAULT_DAYS) params.delete("days");
+    else params.set("days", String(next));
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  };
+
+  const {
+    data: stats,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+    dataUpdatedAt,
+  } = useDashboardStats(days);
+
+  const header = (
+    <DashboardHeader
+      onRefresh={() => refetch()}
+      refreshing={isFetching}
+      updatedAt={stats ? dataUpdatedAt : undefined}
+    />
+  );
+
+  if (error && !stats) {
     return (
-      <Card>
-        <CardContent className="text-destructive py-8 text-center text-sm">
-          {getErrorMessage(error)}
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        {header}
+        <ErrorState message={getErrorMessage(error)} onRetry={() => refetch()} />
+      </div>
     );
   }
 
-  // Show every status in lifecycle order, including ones with zero parcels.
-  const breakdown = PARCEL_STATUSES.map((status) => ({
-    status: humanize(status),
-    count: stats?.statusBreakdown.find((s) => s.status === status)?.count ?? 0,
-  }));
+  if (isLoading || !stats) {
+    return (
+      <div className="space-y-6">
+        {header}
+        <OverviewSkeleton />
+      </div>
+    );
+  }
 
   return (
-    <>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          title="Total income"
-          value={formatCurrency(stats?.totalIncome ?? 0)}
-          icon={CircleDollarSign}
-          loading={isLoading}
-        />
-        <StatCard
-          title="Total parcels"
-          value={stats?.totalParcels ?? 0}
-          icon={Boxes}
-          loading={isLoading}
-        />
-        <StatCard
-          title="Customers"
-          value={stats?.totalCustomers ?? 0}
-          icon={Users}
-          loading={isLoading}
-        />
-        <StatCard
-          title="Couriers"
-          value={stats?.totalCouriers ?? 0}
-          hint={stats ? `${stats.activeCouriers} available now` : undefined}
-          icon={Truck}
-          loading={isLoading}
-        />
-        <StatCard
-          title="Delivered"
-          value={stats?.deliveredParcels ?? 0}
-          icon={PackageCheck}
-          loading={isLoading}
-        />
-        <StatCard
-          title="Pending"
-          value={stats?.pendingParcels ?? 0}
-          icon={Timer}
-          loading={isLoading}
-        />
-        <StatCard
-          title="Cancelled"
-          value={stats?.cancelledParcels ?? 0}
-          icon={Ban}
-          loading={isLoading}
-        />
-        <StatCard
-          title="Returned"
-          value={stats?.returnedParcels ?? 0}
-          hint={stats ? `${stats.totalFailedDeliveryAttempts} failed attempts` : undefined}
-          icon={stats?.totalFailedDeliveryAttempts ? TriangleAlert : RotateCcw}
-          loading={isLoading}
-        />
-      </div>
+    <div className="space-y-6">
+      {header}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Parcels by status</CardTitle>
-          <CardDescription>Current distribution across the delivery lifecycle.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <Skeleton className="h-72 w-full" />
-          ) : (
-            <div className="h-72 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={breakdown} margin={{ left: -16 }}>
-                  <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis
-                    dataKey="status"
-                    tickLine={false}
-                    axisLine={false}
-                    interval={0}
-                    angle={-30}
-                    textAnchor="end"
-                    height={70}
-                    fontSize={12}
-                  />
-                  <YAxis allowDecimals={false} tickLine={false} axisLine={false} fontSize={12} />
-                  <Tooltip
-                    cursor={{ fill: "var(--muted)" }}
-                    contentStyle={{
-                      background: "var(--popover)",
-                      border: "1px solid var(--border)",
-                      borderRadius: 8,
-                      color: "var(--popover-foreground)",
-                    }}
-                  />
-                  <Bar dataKey="count" name="Parcels" fill="var(--primary)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </>
+      {stats.period ? (
+        <ChartAreaInteractive period={stats.period} onDaysChange={setDays} fetching={isFetching} />
+      ) : (
+        <Card>
+          <EmptyState
+            icon={LineChart}
+            title="Trends aren't available yet"
+            description="The connected server doesn't report daily activity. Deploy the latest backend to see bookings and revenue over time — the totals below are live."
+          />
+        </Card>
+      )}
+
+      <TotalsStrip stats={stats} />
+
+      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+        <ChartCard title="Parcel status" description="Where every parcel stands right now.">
+          <StatusDistributionChart breakdown={stats.statusBreakdown} />
+        </ChartCard>
+        <ChartCard title="Needs attention" description="Queues that need an admin.">
+          <NeedsAttention breakdown={stats.statusBreakdown} />
+        </ChartCard>
+        <ChartCard
+          className="lg:col-span-2 xl:col-span-1"
+          title="Recent activity"
+          description="Latest recorded actions."
+        >
+          <RecentActivity />
+        </ChartCard>
+      </div>
+    </div>
   );
 }

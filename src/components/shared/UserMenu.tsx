@@ -43,13 +43,11 @@ export function UserMenu() {
             <LayoutDashboard /> Dashboard
           </Link>
         </DropdownMenuItem>
-        {user.role === "CUSTOMER" && (
-          <DropdownMenuItem asChild>
-            <Link href="/customer/profile">
-              <User /> Profile
-            </Link>
-          </DropdownMenuItem>
-        )}
+        <DropdownMenuItem asChild>
+          <Link href={`${ROLE_HOME[user.role]}/profile`}>
+            <User /> Profile
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           variant="destructive"

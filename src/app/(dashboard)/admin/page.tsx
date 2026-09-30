@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { AdminOverview } from "@/components/modules/admin/AdminOverview";
-import { PageHeader } from "@/components/shared/PageHeader";
+import { OverviewSkeleton } from "@/components/modules/admin/overview/OverviewSkeleton";
 
 export const metadata: Metadata = { title: "Admin overview" };
 
 export default function AdminOverviewPage() {
   return (
-    <>
-      <PageHeader title="Overview" description="Platform-wide activity at a glance." />
+    <Suspense fallback={<OverviewSkeleton />}>
       <AdminOverview />
-    </>
+    </Suspense>
   );
 }

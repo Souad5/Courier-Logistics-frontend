@@ -27,7 +27,7 @@ export function TrackParcelForm({ defaultValue = "" }: { defaultValue?: string }
         <AppInput
           value={trackingNumber}
           onChange={(event) => setTrackingNumber(event.target.value)}
-          placeholder="Enter tracking number, e.g. BCM1A2B3C4D"
+          placeholder="Tracking number, e.g. BCM1A2B3C4D"
           aria-label="Tracking number"
           autoComplete="off"
           spellCheck={false}

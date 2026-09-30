@@ -34,6 +34,8 @@ export interface AppSelectProps<V extends string = string> {
   onBlur?: () => void;
   className?: string;
   containerClassName?: string;
+  /** Accessible name when there is no visible label. */
+  ariaLabel?: string;
 }
 
 /**
@@ -55,6 +57,7 @@ export function AppSelect<V extends string = string>({
   onBlur,
   className,
   containerClassName,
+  ariaLabel,
 }: AppSelectProps<V>) {
   const generatedId = useId();
   const selectId = id ?? generatedId;
@@ -80,6 +83,7 @@ export function AppSelect<V extends string = string>({
         <SelectTrigger
           id={selectId}
           className={cn("w-full", className)}
+          aria-label={ariaLabel}
           {...fieldA11yProps(selectId, error)}
         >
           <SelectValue placeholder={placeholder} />

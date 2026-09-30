@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-
-import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
 import { HubFormDialog } from "@/components/modules/hubs/HubFormDialog";
-import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { AppButton } from "@/components/shared/AppButton";
-import { useHubs, useDeleteHub } from "@/hooks/useHubs";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
+import { ErrorState } from "@/components/shared/ErrorState";
+import { useDeleteHub, useHubs } from "@/hooks/useHubs";
 import { getErrorMessage } from "@/lib/api-client";
 import { formatDate } from "@/lib/utils";
 import type { Hub } from "@/types";
@@ -16,7 +16,7 @@ import type { Hub } from "@/types";
  * Must render inside <Suspense>.
  */
 export function HubsTable() {
-  const { data, isLoading, error } = useHubs({ limit: 1000 });
+  const { data, isLoading, error, refetch } = useHubs({ limit: 1000 });
   const deleteHub = useDeleteHub();
 
   const [selectedHub, setSelectedHub] = useState<Hub | null>(null);
@@ -34,24 +34,23 @@ export function HubsTable() {
       className: "text-right",
       cell: (h) => (
         <div className="flex items-center justify-end gap-2">
-          <button
-            className="text-xs text-blue-600 hover:underline"
-            onClick={() => setSelectedHub(h)}
-          >
+          <AppButton variant="link" size="sm" onClick={() => setSelectedHub(h)}>
             Edit
-          </button>
-          <button
-            className="text-xs text-red-600 hover:underline"
+          </AppButton>
+          <AppButton
+            variant="link"
+            size="sm"
+            className="text-destructive"
             onClick={() => setHubToDelete(h)}
           >
             Delete
-          </button>
+          </AppButton>
         </div>
       ),
     },
   ];
 
-  if (error) return <p className="text-destructive text-sm">{getErrorMessage(error)}</p>;
+  if (error) return <ErrorState message={getErrorMessage(error)} onRetry={() => refetch()} />;
 
   return (
     <>
@@ -67,11 +66,12 @@ export function HubsTable() {
         getRowId={(h) => h.id}
         loading={isLoading}
         emptyMessage="No hubs yet."
+        emptyDescription="Create a hub to start routing parcels."
       />
 
       {selectedHub && (
         <HubFormDialog
-          hub={selectedHub && selectedHub.id ? selectedHub : undefined}
+          hub={selectedHub?.id ? selectedHub : undefined}
           onClose={() => setSelectedHub(null)}
         />
       )}

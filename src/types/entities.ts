@@ -161,4 +161,25 @@ export interface DashboardStats {
   returnedParcels: number;
   totalFailedDeliveryAttempts: number;
   statusBreakdown: Array<{ status: ParcelStatus; count: number }>;
+  /** Present when the backend supports `?days=`; absent on older deployments. */
+  period?: DashboardPeriod;
+}
+
+export interface DashboardTimelinePoint {
+  date: string;
+  parcels: number;
+  delivered: number;
+  revenue: number;
+}
+
+export interface DashboardPeriod {
+  days: number;
+  from: string;
+  parcels: number;
+  revenue: number;
+  delivered: number;
+  previousParcels: number;
+  previousRevenue: number;
+  previousDelivered: number;
+  timeline: DashboardTimelinePoint[];
 }

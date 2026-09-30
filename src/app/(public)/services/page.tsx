@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 
-import { PageHeader } from "@/components/shared/PageHeader";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+
+import { AppButton } from "@/components/shared/AppButton";
+import { PublicPageHeader, SectionHeading } from "@/components/shared/SectionHeading";
 import { FEATURES, PARCEL_TYPE_INFO } from "@/config/content";
 import { pageMetadata } from "@/lib/seo";
 
@@ -14,43 +16,60 @@ export const metadata: Metadata = pageMetadata({
 
 export default function ServicesPage() {
   return (
-    <div className="container mx-auto space-y-12 px-4 py-14">
-      <PageHeader
-        title="Services"
-        description="Door-to-door delivery for every kind of shipment, across every zone we serve."
+    <>
+      <PublicPageHeader
+        eyebrow="Services"
+        title="Door-to-door delivery for every kind of shipment."
+        description="Documents, everyday parcels, fragile items and perishables — booked online, carried by our couriers and tracked across every zone we serve."
       />
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">What we carry</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="container mx-auto px-4 py-16 md:py-20">
+        <SectionHeading eyebrow="What we carry" title="Four parcel types, one booking flow." />
+        <div className="bg-border mt-10 grid gap-px overflow-hidden rounded-2xl border sm:grid-cols-2 lg:grid-cols-4">
           {Object.entries(PARCEL_TYPE_INFO).map(([type, info]) => (
-            <Card key={type}>
-              <CardHeader>
-                <info.icon className="text-primary size-6" />
-                <CardTitle>{info.label}</CardTitle>
-                <CardDescription>{info.description}</CardDescription>
-              </CardHeader>
-            </Card>
+            <div key={type} className="bg-background space-y-3 p-6">
+              <info.icon className="size-5" aria-hidden />
+              <h3 className="font-semibold">{info.label}</h3>
+              <p className="text-muted-foreground text-sm">{info.description}</p>
+            </div>
           ))}
         </div>
       </section>
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Included with every delivery</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {FEATURES.map((feature) => (
-            <Card key={feature.title}>
-              <CardContent className="flex gap-4">
-                <feature.icon className="text-primary size-6 shrink-0" />
-                <div>
-                  <p className="font-medium">{feature.title}</p>
+      <section className="border-t">
+        <div className="container mx-auto grid gap-10 px-4 py-16 md:py-20 lg:grid-cols-[0.8fr_1.2fr]">
+          <SectionHeading
+            eyebrow="Included"
+            title="With every delivery."
+            description="No add-ons to choose. Every parcel gets the same service."
+          />
+          <ul className="divide-y border-y">
+            {FEATURES.map((feature) => (
+              <li key={feature.title} className="flex gap-4 py-5">
+                <feature.icon className="mt-0.5 size-5 shrink-0" aria-hidden />
+                <div className="space-y-1">
+                  <h3 className="font-medium">{feature.title}</h3>
                   <p className="text-muted-foreground text-sm">{feature.description}</p>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
-    </div>
+
+      <section className="border-t">
+        <div className="container mx-auto flex flex-wrap items-center justify-between gap-4 px-4 py-10">
+          <p className="font-medium">Ready to book? It takes about a minute.</p>
+          <div className="flex gap-2">
+            <AppButton asChild>
+              <Link href="/register">Send a parcel</Link>
+            </AppButton>
+            <AppButton asChild variant="outline">
+              <Link href="/pricing">See pricing</Link>
+            </AppButton>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

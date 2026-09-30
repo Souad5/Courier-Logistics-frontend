@@ -35,11 +35,12 @@ export function StatusBadge(props: StatusBadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap",
+        "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap",
         style,
         props.className,
       )}
     >
+      <span aria-hidden className="size-1.5 rounded-full bg-current opacity-70" />
       {humanize(props.status)}
     </span>
   );

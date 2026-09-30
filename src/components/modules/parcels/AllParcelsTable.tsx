@@ -1,14 +1,13 @@
 "use client";
 
-import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
-
-import { StatusUpdateDialog } from "@/components/modules/parcels/StatusUpdateDialog";
+import { useState } from "react";
 import { AssignParcelDialog } from "@/components/modules/parcels/AssignParcelDialog";
+import { ParcelFilters } from "@/components/modules/parcels/ParcelFilters";
+import { StatusUpdateDialog } from "@/components/modules/parcels/StatusUpdateDialog";
+import { AppButton } from "@/components/shared/AppButton";
 import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
-import { AppInput } from "@/components/shared/form";
+import { ErrorState } from "@/components/shared/ErrorState";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { useDebounce } from "@/hooks/useDebounce";
 import { usePagination } from "@/hooks/usePagination";
 import { useParcels } from "@/hooks/useParcels";
 import { getErrorMessage } from "@/lib/api-client";
@@ -20,15 +19,10 @@ import type { Parcel } from "@/types";
  * Must render inside <Suspense>.
  */
 export function AllParcelsTable() {
-  const { query, setPage, setSearch } = usePagination();
-  const [search, setSearchInput] = useState(String(query.search ?? ""));
-  const debouncedSearch = useDebounce(search);
+  const pagination = usePagination();
+  const { query, setPage } = pagination;
 
-  useEffect(() => {
-    if (debouncedSearch !== (query.search ?? "")) setSearch(debouncedSearch);
-  }, [debouncedSearch, query.search, setSearch]);
-
-  const { data, isLoading, isFetching, error } = useParcels(query);
+  const { data, isLoading, isFetching, error, refetch } = useParcels(query);
   const [selectedParcel, setSelectedParcel] = useState<Parcel | null>(null);
   const [updateStatusParcel, setUpdateStatusParcel] = useState<Parcel | null>(null);
 
@@ -55,25 +49,19 @@ export function AllParcelsTable() {
       cell: (p) => (
         <div className="flex items-center justify-end gap-2">
           {!p.courierId && (
-            <button
-              className="text-xs text-blue-600 hover:underline"
-              onClick={() => setSelectedParcel(p)}
-            >
+            <AppButton variant="link" size="sm" onClick={() => setSelectedParcel(p)}>
               Assign
-            </button>
+            </AppButton>
           )}
-          <button
-            className="text-xs text-amber-600 hover:underline"
-            onClick={() => setUpdateStatusParcel(p)}
-          >
+          <AppButton variant="link" size="sm" onClick={() => setUpdateStatusParcel(p)}>
             Update
-          </button>
+          </AppButton>
         </div>
       ),
     },
   ];
 
-  if (error) return <p className="text-destructive text-sm">{getErrorMessage(error)}</p>;
+  if (error) return <ErrorState message={getErrorMessage(error)} onRetry={() => refetch()} />;
 
   return (
     <>
@@ -85,23 +73,11 @@ export function AllParcelsTable() {
         meta={data?.meta}
         onPageChange={setPage}
         emptyMessage="No parcels yet."
-        toolbar={
-          <AppInput
-            type="search"
-            value={search}
-            onChange={(event) => setSearchInput(event.target.value)}
-            placeholder="Search tracking number or sender…"
-            aria-label="Search parcels"
-            leftIcon={<Search />}
-            containerClassName="w-full max-w-xs"
-          />
-        }
+        toolbar={<ParcelFilters pagination={pagination} />}
+        emptyDescription="Try changing the search or status filter."
       />
       {selectedParcel && (
-        <AssignParcelDialog
-          parcel={selectedParcel}
-          onClose={() => setSelectedParcel(null)}
-        />
+        <AssignParcelDialog parcel={selectedParcel} onClose={() => setSelectedParcel(null)} />
       )}
       {updateStatusParcel && (
         <StatusUpdateDialog

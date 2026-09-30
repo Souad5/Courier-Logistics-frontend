@@ -3,7 +3,6 @@ import Link from "next/link";
 
 import { DemoLoginButtons } from "@/components/modules/auth/DemoLoginButtons";
 import { LoginForm } from "@/components/modules/auth/LoginForm";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -15,21 +14,21 @@ export const metadata: Metadata = pageMetadata({
 
 export default function LoginPage() {
   return (
-    <Card>
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Welcome back</CardTitle>
-        <CardDescription>Log in to manage your parcels and deliveries.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <LoginForm />
-        <DemoLoginButtons />
-        <p className="text-muted-foreground text-center text-sm">
-          Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-primary font-medium hover:underline">
-            Sign up
-          </Link>
+    <div className="space-y-8">
+      <div className="space-y-2">
+        <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
+        <p className="text-muted-foreground text-sm">
+          Log in to manage your parcels and deliveries.
         </p>
-      </CardContent>
-    </Card>
+      </div>
+      <LoginForm />
+      <DemoLoginButtons />
+      <p className="text-muted-foreground text-center text-sm">
+        Don&apos;t have an account?{" "}
+        <Link href="/register" className="text-foreground font-medium hover:underline">
+          Sign up
+        </Link>
+      </p>
+    </div>
   );
 }

@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
-import { useDebounce } from "@/hooks/useDebounce";
-import { usePagination } from "@/hooks/usePagination";
+import { ErrorState } from "@/components/shared/ErrorState";
+import { SortSelect } from "@/components/shared/SortSelect";
 import { useAuditLogs } from "@/hooks/useAdmin";
+import { usePagination } from "@/hooks/usePagination";
 import { getErrorMessage } from "@/lib/api-client";
-import { formatDate, humanize } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import type { AuditLog } from "@/types";
 
 /**
@@ -15,8 +14,8 @@ import type { AuditLog } from "@/types";
  * Must render inside <Suspense>.
  */
 export function AuditLogsTable() {
-  const { query, setPage } = usePagination();
-  const { data, isLoading, isFetching, error } = useAuditLogs(query);
+  const { query, setPage, setFilter } = usePagination();
+  const { data, isLoading, isFetching, error, refetch } = useAuditLogs(query);
 
   const columns: DataTableColumn<AuditLog>[] = [
     {
@@ -52,7 +51,7 @@ export function AuditLogsTable() {
     },
   ];
 
-  if (error) return <p className="text-destructive text-sm">{getErrorMessage(error)}</p>;
+  if (error) return <ErrorState message={getErrorMessage(error)} onRetry={() => refetch()} />;
 
   return (
     <DataTable
@@ -63,6 +62,13 @@ export function AuditLogsTable() {
       meta={data?.meta}
       onPageChange={setPage}
       emptyMessage="No audit logs yet."
+      emptyDescription="Critical actions across the platform are recorded here."
+      toolbar={
+        <SortSelect
+          value={query.sortOrder as string | undefined}
+          onChange={(v) => setFilter("sortOrder", v)}
+        />
+      }
     />
   );
 }

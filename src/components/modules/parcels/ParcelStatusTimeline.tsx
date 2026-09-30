@@ -15,7 +15,7 @@ export function ParcelStatusTimeline({ history }: { history: ParcelStatusHistory
           <span
             className={
               index === 0
-                ? "bg-primary ring-background absolute top-1 -left-[31px] size-3 rounded-full ring-4"
+                ? "bg-signal ring-background absolute top-1 -left-[31px] size-3 rounded-full ring-4"
                 : "bg-muted-foreground/40 ring-background absolute top-1 -left-[31px] size-3 rounded-full ring-4"
             }
           />
