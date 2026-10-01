@@ -28,23 +28,25 @@ export type ParcelType = (typeof PARCEL_TYPES)[number];
 export const PAYMENT_STATUSES = ["PENDING", "PAID", "FAILED", "REFUNDED", "CANCELED"] as const;
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 
-export type AuditAction =
-  | "REGISTER"
-  | "LOGIN"
-  | "GOOGLE_LOGIN"
-  | "LOGOUT"
-  | "ROLE_CHANGED"
-  | "PARCEL_CREATED"
-  | "PARCEL_STATUS_CHANGED"
-  | "PARCEL_ASSIGNED"
-  | "PARCEL_DELETED"
-  | "PARCEL_PROOF_OF_DELIVERY_UPLOADED"
-  | "PAYMENT_CREATED"
-  | "PAYMENT_VERIFIED"
-  | "PAYMENT_FAILED"
-  | "HUB_CREATED"
-  | "HUB_UPDATED"
-  | "HUB_DELETED";
+export const AUDIT_ACTIONS = [
+  "REGISTER",
+  "LOGIN",
+  "GOOGLE_LOGIN",
+  "LOGOUT",
+  "ROLE_CHANGED",
+  "PARCEL_CREATED",
+  "PARCEL_STATUS_CHANGED",
+  "PARCEL_ASSIGNED",
+  "PARCEL_DELETED",
+  "PARCEL_PROOF_OF_DELIVERY_UPLOADED",
+  "PAYMENT_CREATED",
+  "PAYMENT_VERIFIED",
+  "PAYMENT_FAILED",
+  "HUB_CREATED",
+  "HUB_UPDATED",
+  "HUB_DELETED",
+] as const;
+export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 
 /**
  * Courier/admin status transitions, copied from ALLOWED_TRANSITIONS in
