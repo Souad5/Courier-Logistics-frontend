@@ -14,6 +14,15 @@ const COLUMNS = [
     ],
   },
   {
+    title: "Help",
+    links: [
+      { title: "Track a parcel", href: "/#track" },
+      { title: "Delivery charges", href: "/#charges" },
+      { title: "Coverage", href: "/#coverage" },
+      { title: "FAQ", href: "/#faq" },
+    ],
+  },
+  {
     title: "Company",
     links: [
       { title: "About", href: "/about" },
@@ -32,15 +41,15 @@ const COLUMNS = [
 export function Footer() {
   return (
     <footer className="border-t">
-      <div className="container mx-auto grid grid-cols-3 gap-x-6 gap-y-10 px-4 py-12 md:grid-cols-[1.5fr_repeat(3,1fr)]">
-        <div className="col-span-3 space-y-3 md:col-span-1">
+      <div className="container mx-auto grid grid-cols-2 gap-x-6 gap-y-10 px-4 py-12 sm:grid-cols-4 md:grid-cols-[1.5fr_repeat(4,1fr)]">
+        <div className="col-span-2 space-y-3 sm:col-span-4 md:col-span-1">
           <Logo />
           <p className="text-muted-foreground max-w-xs text-sm text-pretty">
             {siteConfig.description}
           </p>
           <a
             href={`mailto:${siteConfig.contactEmail}`}
-            className="text-muted-foreground hover:text-foreground inline-block font-mono text-xs"
+            className="text-muted-foreground hover:text-foreground inline-block font-mono text-sm"
           >
             {siteConfig.contactEmail}
           </a>
@@ -64,7 +73,7 @@ export function Footer() {
         ))}
       </div>
       <div className="border-t">
-        <p className="text-muted-foreground container mx-auto px-4 py-5 text-xs">
+        <p className="text-muted-foreground container mx-auto px-4 py-5 text-sm">
           © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
         </p>
       </div>
