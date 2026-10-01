@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ParcelFilters } from "@/components/modules/parcels/ParcelFilters";
 import { ProofOfDeliveryDialog } from "@/components/modules/parcels/ProofOfDeliveryDialog";
+import { StatusQuickFilters } from "@/components/modules/parcels/StatusQuickFilters";
 import { StatusUpdateDialog } from "@/components/modules/parcels/StatusUpdateDialog";
 import { AppButton } from "@/components/shared/AppButton";
 import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
@@ -14,6 +15,13 @@ import { getErrorMessage } from "@/lib/api-client";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Parcel } from "@/types";
 
+const QUICK_FILTERS = [
+  { label: "All assigned" },
+  { label: "Out for delivery", status: "OUT_FOR_DELIVERY" as const },
+  { label: "Delivery failed", status: "DELIVERY_FAILED" as const },
+  { label: "Delivered", status: "DELIVERED" as const },
+];
+
 /**
  * Courier view: parcels assigned to me with status update actions.
  * The backend scopes useMyParcels by role (couriers get assigned parcels).
@@ -21,7 +29,7 @@ import type { Parcel } from "@/types";
  */
 export function CourierTasksTable() {
   const pagination = usePagination();
-  const { query, setPage } = pagination;
+  const { query, setPage, setLimit } = pagination;
   const [updateStatusParcel, setUpdateStatusParcel] = useState<Parcel | null>(null);
   const [proofParcel, setProofParcel] = useState<Parcel | null>(null);
 
@@ -31,7 +39,7 @@ export function CourierTasksTable() {
     {
       key: "tracking",
       header: "Tracking #",
-      cell: (p) => <span className="font-mono text-xs">{p.trackingNumber}</span>,
+      cell: (p) => <span className="font-mono text-sm">{p.trackingNumber}</span>,
     },
     { key: "sender", header: "Sender", cell: (p) => p.sender?.name ?? "—" },
     { key: "receiver", header: "Receiver", cell: (p) => p.receiverName },
@@ -39,18 +47,23 @@ export function CourierTasksTable() {
       key: "route",
       header: "Route",
       cell: (p) => (
-        <span className="text-muted-foreground text-xs">
+        <span className="text-muted-foreground text-sm">
           {p.originHub?.name ?? "—"} → {p.destinationHub?.name ?? "—"}
         </span>
       ),
     },
     { key: "status", header: "Status", cell: (p) => <StatusBadge status={p.status} /> },
-    { key: "fee", header: "Delivery Fee", cell: (p) => formatCurrency(p.fee, p.currency) },
     { key: "created", header: "Booked", cell: (p) => formatDate(p.createdAt) },
     {
+      key: "fee",
+      header: "Delivery fee",
+      align: "right",
+      cell: (p) => <span className="tabular-nums">{formatCurrency(p.fee, p.currency)}</span>,
+    },
+    {
       key: "actions",
-      header: "",
-      className: "text-right",
+      header: "Actions",
+      align: "right",
       cell: (p) => (
         <div className="flex items-center justify-end gap-1">
           {(p.status === "OUT_FOR_DELIVERY" || p.status === "DELIVERED") && (
@@ -70,6 +83,7 @@ export function CourierTasksTable() {
 
   return (
     <>
+      <StatusQuickFilters pagination={pagination} items={QUICK_FILTERS} />
       <DataTable
         columns={columns}
         data={data?.data.parcels}
@@ -77,9 +91,10 @@ export function CourierTasksTable() {
         loading={isLoading || isFetching}
         meta={data?.meta}
         onPageChange={setPage}
+        onLimitChange={setLimit}
         emptyMessage="No tasks assigned to you yet."
         emptyDescription="Parcels an admin assigns to you will show up here."
-        toolbar={<ParcelFilters pagination={pagination} searchable={false} />}
+        toolbar={<ParcelFilters pagination={pagination} />}
       />
       {proofParcel && (
         <ProofOfDeliveryDialog parcel={proofParcel} onClose={() => setProofParcel(null)} />

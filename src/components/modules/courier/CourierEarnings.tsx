@@ -67,16 +67,18 @@ export function CourierEarnings() {
     {
       key: "tracking",
       header: "Tracking #",
-      cell: (p) => <span className="font-mono text-xs">{p.trackingNumber}</span>,
+      cell: (p) => <span className="font-mono text-sm">{p.trackingNumber}</span>,
     },
     { key: "receiver", header: "Receiver", cell: (p) => p.receiverName },
+    { key: "delivered", header: "Delivered", cell: (p) => formatDate(p.deliveredAt) },
     {
       key: "fee",
       header: "Earnings",
-      className: "text-right",
-      cell: (p) => <span className="tabular-nums">{formatCurrency(p.fee, p.currency)}</span>,
+      align: "right",
+      cell: (p) => (
+        <span className="font-medium tabular-nums">{formatCurrency(p.fee, p.currency)}</span>
+      ),
     },
-    { key: "delivered", header: "Delivered", cell: (p) => formatDate(p.deliveredAt) },
   ];
 
   return (
@@ -99,7 +101,7 @@ export function CourierEarnings() {
         />
       </div>
       {partial && (
-        <p className="text-muted-foreground text-xs">
+        <p className="text-muted-foreground text-sm">
           Earnings figures cover your {delivered.length} most recent deliveries.
         </p>
       )}
