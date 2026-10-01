@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Camera } from "lucide-react";
 import { useRef } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -9,6 +10,8 @@ import { z } from "zod";
 import { AppButton } from "@/components/shared/AppButton";
 import { FormInput } from "@/components/shared/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUpdateProfile } from "@/hooks/useUsers";
 import { formatDate, humanize, initials } from "@/lib/utils";
@@ -84,17 +87,18 @@ function ProfileFields({ user }: { user: User }) {
     });
 
   return (
-    <div className="grid max-w-2xl gap-6">
-      <div className="flex items-center gap-4">
-        <Avatar className="size-16">
-          {avatarUrl && <AvatarImage src={avatarUrl} alt={user.name} />}
-          <AvatarFallback>{initials(user.name)}</AvatarFallback>
-        </Avatar>
-        <div className="space-y-1">
-          <p className="font-medium">{user.name}</p>
-          <p className="text-muted-foreground text-sm">
-            {humanize(user.role)} · Joined {formatDate(user.createdAt)}
-          </p>
+    <div className="grid gap-6 lg:grid-cols-3">
+      <Card className="lg:row-span-2">
+        <CardContent className="flex flex-col items-center gap-4 text-center">
+          <Avatar className="size-24">
+            {avatarUrl && <AvatarImage src={avatarUrl} alt={user.name} />}
+            <AvatarFallback className="text-2xl">{initials(user.name)}</AvatarFallback>
+          </Avatar>
+          <div className="space-y-1">
+            <p className="text-lg font-semibold">{user.name}</p>
+            <p className="text-muted-foreground text-sm break-all">{user.email}</p>
+          </div>
+          <Badge variant="secondary">{humanize(user.role)}</Badge>
           <input
             ref={fileInput}
             type="file"
@@ -108,40 +112,71 @@ function ProfileFields({ user }: { user: User }) {
           <AppButton
             type="button"
             variant="outline"
-            size="sm"
+            leftIcon={<Camera />}
             onClick={() => fileInput.current?.click()}
           >
             Upload photo
           </AppButton>
-        </div>
-      </div>
+          <p className="text-muted-foreground text-sm">
+            JPG or PNG, up to 5 MB. Saved when you click Save changes.
+          </p>
+        </CardContent>
+      </Card>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-        <FormInput control={control} name="name" label="Full name" required />
-        <FormInput
-          control={control}
-          name="phone"
-          label="Phone"
-          type="tel"
-          placeholder="+8801XXXXXXXXX"
-        />
-        <AppButton type="submit" loading={update.isPending} disabled={!formState.isDirty}>
-          Save changes
-        </AppButton>
-      </form>
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle>Personal information</CardTitle>
+          <CardDescription>How couriers and support can reach you.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormInput control={control} name="name" label="Full name" required />
+              <FormInput
+                control={control}
+                name="phone"
+                label="Phone"
+                type="tel"
+                placeholder="+8801XXXXXXXXX"
+              />
+            </div>
+            <div className="flex justify-end border-t pt-4">
+              <AppButton type="submit" loading={update.isPending} disabled={!formState.isDirty}>
+                Save changes
+              </AppButton>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
 
-      <div className="space-y-4 border-t pt-6">
-        <FormInputReadOnly label="Email" value={user.email} />
-      </div>
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle>Account</CardTitle>
+          <CardDescription>These details are managed by the platform.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <dl className="bg-border grid gap-px overflow-hidden rounded-lg border sm:grid-cols-2">
+            <AccountItem label="Email" value={user.email} />
+            <AccountItem label="Role" value={humanize(user.role)} />
+            <AccountItem
+              label="Sign-in method"
+              value={user.provider === "GOOGLE" ? "Google" : "Email and password"}
+            />
+            <AccountItem label="Member since" value={formatDate(user.createdAt)} />
+            <AccountItem label="Email verified" value={user.isEmailVerified ? "Yes" : "Not yet"} />
+            <AccountItem label="Account status" value={humanize(user.status)} />
+          </dl>
+        </CardContent>
+      </Card>
     </div>
   );
 }
 
-function FormInputReadOnly({ label, value }: { label: string; value: string }) {
+function AccountItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="space-y-1">
-      <p className="text-sm font-medium">{label}</p>
-      <p className="text-muted-foreground text-sm">{value}</p>
+    <div className="bg-card space-y-1 p-4">
+      <dt className="text-muted-foreground text-sm">{label}</dt>
+      <dd className="text-sm font-medium break-all">{value}</dd>
     </div>
   );
 }
@@ -152,10 +187,9 @@ export function ProfileForm() {
 
   if (!hydrated || !user) {
     return (
-      <div className="max-w-2xl space-y-4">
-        <Skeleton className="size-16 rounded-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Skeleton className="h-80 rounded-xl" />
+        <Skeleton className="h-80 rounded-xl lg:col-span-2" />
       </div>
     );
   }
