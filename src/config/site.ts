@@ -43,6 +43,7 @@ export const publicNav: NavItem[] = [
   { title: "Home", href: "/" },
   { title: "Services", href: "/services" },
   { title: "Pricing", href: "/pricing" },
+  { title: "Coverage", href: "/#coverage" },
   { title: "About", href: "/about" },
   { title: "Contact", href: "/contact" },
 ];
