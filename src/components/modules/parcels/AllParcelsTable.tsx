@@ -20,7 +20,7 @@ import type { Parcel } from "@/types";
  */
 export function AllParcelsTable() {
   const pagination = usePagination();
-  const { query, setPage } = pagination;
+  const { query, setPage, setLimit } = pagination;
 
   const { data, isLoading, isFetching, error, refetch } = useParcels(query);
   const [selectedParcel, setSelectedParcel] = useState<Parcel | null>(null);
@@ -30,7 +30,7 @@ export function AllParcelsTable() {
     {
       key: "tracking",
       header: "Tracking #",
-      cell: (p) => <span className="font-mono text-xs">{p.trackingNumber}</span>,
+      cell: (p) => <span className="font-mono text-sm">{p.trackingNumber}</span>,
     },
     { key: "sender", header: "Sender", cell: (p) => p.sender?.name ?? "—" },
     { key: "receiver", header: "Receiver", cell: (p) => p.receiverName },
@@ -40,12 +40,17 @@ export function AllParcelsTable() {
       cell: (p) => p.courier?.name ?? <span className="text-muted-foreground">Unassigned</span>,
     },
     { key: "status", header: "Status", cell: (p) => <StatusBadge status={p.status} /> },
-    { key: "fee", header: "Fee", cell: (p) => formatCurrency(p.fee, p.currency) },
     { key: "created", header: "Booked", cell: (p) => formatDate(p.createdAt) },
     {
+      key: "fee",
+      header: "Fee",
+      align: "right",
+      cell: (p) => <span className="tabular-nums">{formatCurrency(p.fee, p.currency)}</span>,
+    },
+    {
       key: "actions",
-      header: "",
-      className: "text-right",
+      header: "Actions",
+      align: "right",
       cell: (p) => (
         <div className="flex items-center justify-end gap-2">
           {!p.courierId && (
@@ -72,8 +77,9 @@ export function AllParcelsTable() {
         loading={isLoading || isFetching}
         meta={data?.meta}
         onPageChange={setPage}
+        onLimitChange={setLimit}
         emptyMessage="No parcels yet."
-        toolbar={<ParcelFilters pagination={pagination} />}
+        toolbar={<ParcelFilters pagination={pagination} admin />}
         emptyDescription="Try changing the search or status filter."
       />
       {selectedParcel && (

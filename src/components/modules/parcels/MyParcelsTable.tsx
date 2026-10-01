@@ -17,7 +17,7 @@ import type { Parcel } from "@/types";
  */
 export function MyParcelsTable({ showPayAction = false }: { showPayAction?: boolean }) {
   const pagination = usePagination();
-  const { query, setPage } = pagination;
+  const { query, setPage, setLimit } = pagination;
 
   const { data, isLoading, isFetching, error, refetch } = useMyParcels(query);
 
@@ -25,28 +25,33 @@ export function MyParcelsTable({ showPayAction = false }: { showPayAction?: bool
     {
       key: "tracking",
       header: "Tracking #",
-      cell: (p) => <span className="font-mono text-xs">{p.trackingNumber}</span>,
+      cell: (p) => <span className="font-mono text-sm">{p.trackingNumber}</span>,
     },
     { key: "receiver", header: "Receiver", cell: (p) => p.receiverName },
     {
       key: "route",
       header: "Route",
       cell: (p) => (
-        <span className="text-muted-foreground text-xs">
+        <span className="text-muted-foreground text-sm">
           {p.originHub?.name ?? "—"} → {p.destinationHub?.name ?? "—"}
         </span>
       ),
     },
     { key: "status", header: "Status", cell: (p) => <StatusBadge status={p.status} /> },
-    { key: "fee", header: "Fee", cell: (p) => formatCurrency(p.fee, p.currency) },
     { key: "created", header: "Booked", cell: (p) => formatDate(p.createdAt) },
+    {
+      key: "fee",
+      header: "Fee",
+      align: "right",
+      cell: (p) => <span className="tabular-nums">{formatCurrency(p.fee, p.currency)}</span>,
+    },
   ];
 
   if (showPayAction) {
     columns.push({
       key: "actions",
-      header: "",
-      className: "text-right",
+      header: "Actions",
+      align: "right",
       cell: (p) =>
         p.status === "PENDING" && p.payment?.status !== "PAID" ? (
           <PayNowButton parcelId={p.id} />
@@ -64,6 +69,7 @@ export function MyParcelsTable({ showPayAction = false }: { showPayAction?: bool
       loading={isLoading || isFetching}
       meta={data?.meta}
       onPageChange={setPage}
+      onLimitChange={setLimit}
       emptyMessage="No parcels yet."
       toolbar={<ParcelFilters pagination={pagination} />}
       emptyDescription="Try changing the search or status filter, or book a new parcel."
