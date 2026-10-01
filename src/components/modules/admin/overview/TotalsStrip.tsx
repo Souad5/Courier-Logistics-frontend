@@ -1,36 +1,40 @@
-import { formatCurrency } from "@/lib/utils";
+"use client";
+
+import { useI18n } from "@/i18n/client";
 import type { DashboardStats } from "@/types";
 
 /** Lifetime platform totals in one hairline grid instead of six separate cards. */
 export function TotalsStrip({ stats }: { stats: DashboardStats }) {
+  const { t, f, format } = useI18n();
+  const labels = t.admin.totals;
   const items = [
-    { label: "Lifetime income", value: formatCurrency(stats.totalIncome) },
+    { label: labels.lifetimeIncome, value: f.currency(stats.totalIncome) },
     {
-      label: "Parcels",
-      value: stats.totalParcels.toLocaleString("en"),
-      note: `${stats.deliveredParcels.toLocaleString("en")} delivered`,
+      label: labels.parcels,
+      value: f.number(stats.totalParcels),
+      note: format(labels.delivered, { n: f.number(stats.deliveredParcels) }),
     },
-    { label: "Customers", value: stats.totalCustomers.toLocaleString("en") },
+    { label: labels.customers, value: f.number(stats.totalCustomers) },
     {
-      label: "Couriers",
-      value: stats.totalCouriers.toLocaleString("en"),
-      note: `${stats.activeCouriers.toLocaleString("en")} active accounts`,
-    },
-    {
-      label: "Cancelled or returned",
-      value: (stats.cancelledParcels + stats.returnedParcels).toLocaleString("en"),
-      note: `${stats.cancelledParcels} cancelled · ${stats.returnedParcels} returned`,
+      label: labels.couriers,
+      value: f.number(stats.totalCouriers),
+      note: format(labels.activeAccounts, { n: f.number(stats.activeCouriers) }),
     },
     {
-      label: "Failed delivery attempts",
-      value: stats.totalFailedDeliveryAttempts.toLocaleString("en"),
+      label: labels.cancelledReturned,
+      value: f.number(stats.cancelledParcels + stats.returnedParcels),
+      note: format(labels.cancelledReturnedNote, {
+        cancelled: f.number(stats.cancelledParcels),
+        returned: f.number(stats.returnedParcels),
+      }),
     },
+    { label: labels.failedAttempts, value: f.number(stats.totalFailedDeliveryAttempts) },
   ];
 
   return (
     <section aria-labelledby="totals-heading" className="space-y-3">
       <h2 id="totals-heading" className="eyebrow">
-        All time
+        {labels.heading}
       </h2>
       <dl className="bg-border grid grid-cols-2 gap-px overflow-hidden rounded-xl border md:grid-cols-3 xl:grid-cols-6">
         {items.map((item) => (

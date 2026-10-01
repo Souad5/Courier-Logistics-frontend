@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useI18n } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 
 import { AppField, fieldA11yProps } from "./AppField";
@@ -47,7 +48,7 @@ export function AppSelect<V extends string = string>({
   options,
   value,
   onValueChange,
-  placeholder = "Select…",
+  placeholder,
   label,
   description,
   error,
@@ -59,6 +60,7 @@ export function AppSelect<V extends string = string>({
   containerClassName,
   ariaLabel,
 }: AppSelectProps<V>) {
+  const { t } = useI18n();
   const generatedId = useId();
   const selectId = id ?? generatedId;
 
@@ -94,7 +96,11 @@ export function AppSelect<V extends string = string>({
           {...fieldA11yProps(selectId, error)}
         >
           <SelectValue
-            placeholder={<span className="text-muted-foreground font-normal">{placeholder}</span>}
+            placeholder={
+              <span className="text-muted-foreground font-normal">
+                {placeholder ?? t.common.states.selectPlaceholder}
+              </span>
+            }
           />
         </SelectTrigger>
         <SelectContent className="min-w-[var(--radix-select-trigger-width)]">

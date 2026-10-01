@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 
 import { ROLE_HOME } from "@/config/api.config";
 import { dashboardNav, type NavItem } from "@/config/site";
-import { cn, humanize } from "@/lib/utils";
+import { useI18n } from "@/i18n/client";
+import { cn } from "@/lib/utils";
 import type { Role } from "@/types";
 
 import { Logo } from "./Logo";
@@ -28,10 +29,14 @@ export function useActiveNavItem(role: Role): NavItem | undefined {
 
 /** Role-specific nav links; shared by the desktop sidebar and the mobile sheet. */
 export function SidebarNav({ role, collapsed, onNavigate }: SidebarNavProps) {
+  const { t, format } = useI18n();
   const activeHref = useActiveNavItem(role)?.href;
 
   return (
-    <nav className="flex flex-col gap-0.5" aria-label={`${humanize(role)} navigation`}>
+    <nav
+      className="flex flex-col gap-0.5"
+      aria-label={format(t.nav.shell.navigation, { role: t.enums.role[role] })}
+    >
       {dashboardNav[role].map((item) => {
         const Icon = item.icon;
         const active = item.href === activeHref;
@@ -40,7 +45,7 @@ export function SidebarNav({ role, collapsed, onNavigate }: SidebarNavProps) {
             key={item.href}
             href={item.href}
             onClick={onNavigate}
-            title={collapsed ? item.title : undefined}
+            title={collapsed ? t.nav.dashboard[item.key] : undefined}
             aria-current={active ? "page" : undefined}
             className={cn(
               "relative flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
@@ -58,7 +63,11 @@ export function SidebarNav({ role, collapsed, onNavigate }: SidebarNavProps) {
               />
             )}
             {Icon && <Icon className="size-4 shrink-0" aria-hidden />}
-            {collapsed ? <span className="sr-only">{item.title}</span> : <span>{item.title}</span>}
+            {collapsed ? (
+              <span className="sr-only">{t.nav.dashboard[item.key]}</span>
+            ) : (
+              <span>{t.nav.dashboard[item.key]}</span>
+            )}
           </Link>
         );
       })}
@@ -67,6 +76,7 @@ export function SidebarNav({ role, collapsed, onNavigate }: SidebarNavProps) {
 }
 
 export function Sidebar({ role, collapsed }: { role: Role; collapsed: boolean }) {
+  const { t, format } = useI18n();
   return (
     <aside
       className={cn(
@@ -80,7 +90,11 @@ export function Sidebar({ role, collapsed }: { role: Role; collapsed: boolean })
         <Logo compact={collapsed} />
       </div>
       <div className="flex-1 space-y-2 overflow-y-auto p-3">
-        {!collapsed && <p className="eyebrow px-3 pt-2 pb-1">{humanize(role)} workspace</p>}
+        {!collapsed && (
+          <p className="eyebrow px-3 pt-2 pb-1">
+            {format(t.nav.shell.workspace, { role: t.enums.role[role] })}
+          </p>
+        )}
         <SidebarNav role={role} collapsed={collapsed} />
       </div>
     </aside>

@@ -5,7 +5,8 @@ import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { FilterSelect } from "@/components/shared/FilterSelect";
 import { SearchInput } from "@/components/shared/SearchInput";
-import { DEFAULT_SORT_OPTIONS, SortSelect } from "@/components/shared/SortSelect";
+import { DEFAULT_SORT_OPTIONS, type SortOption, SortSelect } from "@/components/shared/SortSelect";
+import { TableToolbar } from "@/components/shared/TableToolbar";
 import {
   Select,
   SelectContent,
@@ -15,17 +16,17 @@ import {
 } from "@/components/ui/select";
 import { usePagination } from "@/hooks/usePagination";
 import { useChangeUserRole, useUsers } from "@/hooks/useUsers";
+import { useI18n } from "@/i18n/client";
 import { getErrorMessage } from "@/lib/api-client";
-import { formatDate, humanize } from "@/lib/utils";
 import type { User } from "@/types";
 import { ROLES, type Role } from "@/types/enums";
 
 // Within the backend's sortableFields (user.service.ts).
-const USER_SORT = [
+const USER_SORT: SortOption[] = [
   ...DEFAULT_SORT_OPTIONS,
-  { value: "name:asc", label: "Name: A to Z" },
-  { value: "name:desc", label: "Name: Z to A" },
-  { value: "email:asc", label: "Email: A to Z" },
+  { value: "name:asc", key: "nameAsc" },
+  { value: "name:desc", key: "nameDesc" },
+  { value: "email:asc", key: "emailAsc" },
 ];
 
 /**
@@ -33,6 +34,8 @@ const USER_SORT = [
  * Must render inside <Suspense>.
  */
 export function UsersTable() {
+  const { t, f, format } = useI18n();
+  const labels = t.admin.users;
   const pagination = usePagination();
   const { query, setPage, setLimit, setSearch, setFilter } = pagination;
 
@@ -40,31 +43,38 @@ export function UsersTable() {
   const changeRole = useChangeUserRole();
 
   const columns: DataTableColumn<User>[] = [
-    { key: "name", header: "Name", cell: (u) => u.name },
-    { key: "email", header: "Email", cell: (u) => u.email },
+    { key: "name", header: labels.columns.name, cell: (u) => u.name },
+    { key: "email", header: labels.columns.email, cell: (u) => u.email },
     {
       key: "role",
-      header: "Role",
+      header: labels.columns.role,
       cell: (u) => (
         <Select
           defaultValue={u.role}
           onValueChange={(role) => changeRole.mutate({ userId: u.id, role: role as Role })}
         >
-          <SelectTrigger className="w-full">
+          <SelectTrigger
+            className="w-full"
+            aria-label={format(labels.changeRole, { name: u.name })}
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {ROLES.map((role) => (
               <SelectItem key={role} value={role}>
-                {role}
+                {t.enums.role[role]}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       ),
     },
-    { key: "status", header: "Status", cell: (u) => u.status },
-    { key: "created", header: "Joined", cell: (u) => formatDate(u.createdAt) },
+    {
+      key: "status",
+      header: labels.columns.status,
+      cell: (u) => t.enums.userStatus[u.status] ?? u.status,
+    },
+    { key: "created", header: labels.columns.joined, cell: (u) => f.date(u.createdAt) },
   ];
 
   if (error) return <ErrorState message={getErrorMessage(error)} onRetry={() => refetch()} />;
@@ -78,26 +88,34 @@ export function UsersTable() {
       meta={data?.meta}
       onPageChange={setPage}
       onLimitChange={setLimit}
-      emptyMessage="No users yet."
-      emptyDescription="Try changing the search or role filter."
+      emptyMessage={labels.empty}
+      emptyDescription={labels.emptyDescription}
       toolbar={
-        <>
-          <SearchInput
-            value={String(query.search ?? "")}
-            onSearch={setSearch}
-            placeholder="Search by name or email…"
-            label="Search users"
-          />
-          <FilterSelect
-            label="Filter by role"
-            value={query.role as string | undefined}
-            allLabel="All roles"
-            options={ROLES.map((r) => ({ value: r, label: humanize(r) }))}
-            onChange={(v) => setFilter("role", v)}
-          />
-          <SortSelect pagination={pagination} options={USER_SORT} />
-          <ClearFiltersButton pagination={pagination} />
-        </>
+        <TableToolbar
+          start={
+            <>
+              <SearchInput
+                value={String(query.search ?? "")}
+                onSearch={setSearch}
+                placeholder={labels.search}
+                label={labels.searchLabel}
+              />
+              <ClearFiltersButton pagination={pagination} />
+            </>
+          }
+          end={
+            <>
+              <FilterSelect
+                label={labels.roleFilter}
+                value={query.role as string | undefined}
+                allLabel={labels.allRoles}
+                options={ROLES.map((r) => ({ value: r, label: t.enums.role[r] }))}
+                onChange={(v) => setFilter("role", v)}
+              />
+              <SortSelect pagination={pagination} options={USER_SORT} />
+            </>
+          }
+        />
       }
     />
   );

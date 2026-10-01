@@ -8,35 +8,43 @@ import { AppButton } from "@/components/shared/AppButton";
 import { AppDialog } from "@/components/shared/AppDialog";
 import { FormInput, FormTextarea } from "@/components/shared/form";
 import { useCreateHub, useUpdateHub } from "@/hooks/useHubs";
+import { useI18n } from "@/i18n/client";
+import type { Dictionary } from "@/i18n/dictionaries";
+import type { interpolate } from "@/i18n/format";
 import type { Hub } from "@/types";
 
 // Mirrors courier-backend hub.validation.ts; city accepts "" in the form.
-const hubSchema = z.object({
-  name: z.string().trim().min(2, "At least 2 characters").max(100),
-  code: z
-    .string()
-    .trim()
-    .min(2, "At least 2 characters")
-    .max(20)
-    .regex(/^[A-Z0-9_-]+$/i, "Letters, numbers, dashes and underscores only"),
-  zoneCode: z.string().trim().min(2, "At least 2 characters").max(30),
-  zoneName: z.string().trim().min(2, "At least 2 characters").max(60),
-  address: z.string().trim().min(3, "At least 3 characters").max(200),
-  city: z.union([z.literal(""), z.string().trim().min(2, "At least 2 characters").max(60)]),
-  lat: z.number("Enter a number").min(-90).max(90).optional(),
-  lng: z.number("Enter a number").min(-180).max(180).optional(),
-});
+function createHubSchema(t: Dictionary, format: typeof interpolate) {
+  const min = (n: number) => format(t.validation.minChars, { n });
+  return z.object({
+    name: z.string().trim().min(2, min(2)).max(100),
+    code: z
+      .string()
+      .trim()
+      .min(2, min(2))
+      .max(20)
+      .regex(/^[A-Z0-9_-]+$/i, t.hubs.form.codeFormat),
+    zoneCode: z.string().trim().min(2, min(2)).max(30),
+    zoneName: z.string().trim().min(2, min(2)).max(60),
+    address: z.string().trim().min(3, min(3)).max(200),
+    city: z.union([z.literal(""), z.string().trim().min(2, min(2)).max(60)]),
+    lat: z.number(t.validation.number).min(-90).max(90).optional(),
+    lng: z.number(t.validation.number).min(-180).max(180).optional(),
+  });
+}
 
-type HubFormData = z.infer<typeof hubSchema>;
+type HubFormData = z.infer<ReturnType<typeof createHubSchema>>;
 
 export function HubFormDialog({ hub, onClose }: { hub?: Hub; onClose: () => void }) {
+  const { t, format } = useI18n();
+  const labels = t.hubs.form;
   const isEdit = Boolean(hub?.id);
   const create = useCreateHub();
   const update = useUpdateHub();
   const mutation = isEdit ? update : create;
 
   const { control, handleSubmit } = useForm<HubFormData>({
-    resolver: zodResolver(hubSchema),
+    resolver: zodResolver(createHubSchema(t, format)),
     defaultValues: hub
       ? {
           name: hub.name,
@@ -64,27 +72,39 @@ export function HubFormDialog({ hub, onClose }: { hub?: Hub; onClose: () => void
     <AppDialog
       open
       onOpenChange={(open) => !open && onClose()}
-      title={isEdit ? "Edit Hub" : "Create Hub"}
+      title={isEdit ? labels.editTitle : labels.createTitle}
       footer={
         <AppButton onClick={handleSubmit(onSubmit)} loading={mutation.isPending}>
-          {isEdit ? "Update" : "Create"}
+          {isEdit ? labels.update : labels.create}
         </AppButton>
       }
     >
       <div className="space-y-4 py-4">
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormInput control={control} name="name" label="Hub Name" required />
-          <FormInput control={control} name="code" label="Hub Code" required />
+          <FormInput control={control} name="name" label={labels.name} required />
+          <FormInput control={control} name="code" label={labels.code} required />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormInput control={control} name="zoneCode" label="Zone Code" required />
-          <FormInput control={control} name="zoneName" label="Zone Name" required />
+          <FormInput control={control} name="zoneCode" label={labels.zoneCode} required />
+          <FormInput control={control} name="zoneName" label={labels.zoneName} required />
         </div>
-        <FormTextarea control={control} name="address" label="Address" required />
+        <FormTextarea control={control} name="address" label={labels.address} required />
         <div className="grid gap-4 sm:grid-cols-3">
-          <FormInput control={control} name="city" label="City" />
-          <FormInput control={control} name="lat" label="Latitude" type="number" step="0.0001" />
-          <FormInput control={control} name="lng" label="Longitude" type="number" step="0.0001" />
+          <FormInput control={control} name="city" label={labels.city} />
+          <FormInput
+            control={control}
+            name="lat"
+            label={labels.latitude}
+            type="number"
+            step="0.0001"
+          />
+          <FormInput
+            control={control}
+            name="lng"
+            label={labels.longitude}
+            type="number"
+            step="0.0001"
+          />
         </div>
       </div>
     </AppDialog>

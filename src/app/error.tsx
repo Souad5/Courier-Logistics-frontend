@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 
 import { AppButton } from "@/components/shared/AppButton";
+import { useI18n } from "@/i18n/client";
 
 // Next 16 passes `retry` (formerly `reset`) to error boundaries.
 export default function GlobalError({
@@ -14,6 +15,8 @@ export default function GlobalError({
   error: Error & { digest?: string };
   retry: () => void;
 }) {
+  const { t, format } = useI18n();
+
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -23,19 +26,19 @@ export default function GlobalError({
       <div className="bg-destructive/10 text-destructive rounded-full p-4">
         <AlertTriangle className="size-8" />
       </div>
-      <h1 className="text-2xl font-semibold">Something went wrong</h1>
-      <p className="text-muted-foreground max-w-md text-sm">
-        An unexpected error occurred. You can try again, or head back to the home page.
-      </p>
+      <h1 className="text-2xl font-semibold">{t.errors.boundary.title}</h1>
+      <p className="text-muted-foreground max-w-md text-sm">{t.errors.boundary.description}</p>
       {error.digest && (
-        <p className="text-muted-foreground font-mono text-xs">Ref: {error.digest}</p>
+        <p className="text-muted-foreground font-mono text-xs">
+          {format(t.errors.boundary.reference, { digest: error.digest })}
+        </p>
       )}
       <div className="flex gap-2">
         <AppButton leftIcon={<RotateCcw />} onClick={() => retry()}>
-          Try again
+          {t.common.actions.tryAgain}
         </AppButton>
         <AppButton asChild variant="outline">
-          <Link href="/">Go home</Link>
+          <Link href="/">{t.common.actions.goHome}</Link>
         </AppButton>
       </div>
     </div>

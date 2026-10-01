@@ -2,6 +2,7 @@
 
 import type { usePagination } from "@/hooks/usePagination";
 import { useMyParcels } from "@/hooks/useParcels";
+import { useI18n } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 import type { ParcelStatus } from "@/types";
 
@@ -22,11 +23,12 @@ export function StatusQuickFilters({
   pagination: ReturnType<typeof usePagination>;
   items: QuickFilter[];
 }) {
+  const { t } = useI18n();
   const active = pagination.query.status as string | undefined;
 
   return (
     <fieldset className="bg-border grid grid-cols-2 gap-px overflow-hidden rounded-xl border lg:grid-cols-4">
-      <legend className="sr-only">Filter by status</legend>
+      <legend className="sr-only">{t.parcels.filters.status}</legend>
       {items.map((item) => (
         <QuickFilterTile
           key={item.label}
@@ -48,6 +50,7 @@ function QuickFilterTile({
   selected: boolean;
   onSelect: () => void;
 }) {
+  const { f } = useI18n();
   const { data, isLoading } = useMyParcels(
     item.status ? { status: item.status, limit: 1 } : { limit: 1 },
   );
@@ -66,7 +69,7 @@ function QuickFilterTile({
       {selected && <span aria-hidden className="bg-signal absolute inset-x-0 bottom-0 h-0.5" />}
       <span className="text-muted-foreground text-sm">{item.label}</span>
       <span className="text-2xl font-semibold tracking-tight tabular-nums">
-        {isLoading ? "–" : (data?.meta?.total ?? 0)}
+        {isLoading ? "–" : f.number(data?.meta?.total ?? 0)}
       </span>
     </button>
   );

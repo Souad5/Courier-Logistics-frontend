@@ -5,6 +5,8 @@ import { useTheme } from "next-themes";
 import type { MouseEvent } from "react";
 import { flushSync } from "react-dom";
 
+import { useI18n } from "@/i18n/client";
+
 import { AppButton } from "./AppButton";
 
 const REVEAL_MS = 600;
@@ -15,6 +17,7 @@ const REVEAL_MS = 600;
  * switches instantly. The icon spins in via a keyframe animation (see globals.css).
  */
 export function ThemeToggle() {
+  const { t } = useI18n();
   const { resolvedTheme, setTheme } = useTheme();
 
   const toggle = (event: MouseEvent<HTMLButtonElement>) => {
@@ -63,7 +66,7 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       className="rounded-full"
-      aria-label="Toggle theme"
+      aria-label={t.common.theme.toggle}
       onClick={toggle}
     >
       <Sun className="animate-theme-icon size-4 dark:hidden" aria-hidden />

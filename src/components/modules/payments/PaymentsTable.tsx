@@ -5,18 +5,19 @@ import { ClearFiltersButton } from "@/components/shared/ClearFiltersButton";
 import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { SearchInput } from "@/components/shared/SearchInput";
-import { DEFAULT_SORT_OPTIONS, SortSelect } from "@/components/shared/SortSelect";
+import { DEFAULT_SORT_OPTIONS, type SortOption, SortSelect } from "@/components/shared/SortSelect";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { TableToolbar } from "@/components/shared/TableToolbar";
 import { usePagination } from "@/hooks/usePagination";
 import { useMyParcels } from "@/hooks/useParcels";
+import { useI18n } from "@/i18n/client";
 import { getErrorMessage } from "@/lib/api-client";
-import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Parcel } from "@/types";
 
-const PAYMENT_SORT = [
+const PAYMENT_SORT: SortOption[] = [
   ...DEFAULT_SORT_OPTIONS,
-  { value: "fee:desc", label: "Amount: high to low" },
-  { value: "fee:asc", label: "Amount: low to high" },
+  { value: "fee:desc", key: "amountDesc" },
+  { value: "fee:asc", key: "amountAsc" },
 ];
 
 const canPay = (p: Parcel) => p.status === "PENDING" && p.payment?.status !== "PAID";
@@ -26,6 +27,7 @@ const canPay = (p: Parcel) => p.status === "PENDING" && p.payment?.status !== "P
  * through /parcels/my-parcels and reads each parcel's payment. Must render inside <Suspense>.
  */
 export function PaymentsTable() {
+  const { t, f, format } = useI18n();
   const pagination = usePagination();
   const { query, setPage, setLimit, setSearch } = pagination;
   const { data, isLoading, isFetching, error, refetch } = useMyParcels(query);
@@ -33,40 +35,42 @@ export function PaymentsTable() {
   const columns: DataTableColumn<Parcel>[] = [
     {
       key: "tracking",
-      header: "Parcel",
+      header: t.payments.table.parcel,
       cell: (p) => (
         <div>
           <div className="font-mono text-sm font-semibold">{p.trackingNumber}</div>
-          <div className="text-muted-foreground text-sm">To {p.receiverName}</div>
+          <div className="text-muted-foreground text-sm">
+            {format(t.payments.table.to, { name: p.receiverName })}
+          </div>
         </div>
       ),
     },
     {
       key: "paymentStatus",
-      header: "Payment",
+      header: t.payments.table.payment,
       cell: (p) =>
         p.payment ? (
           <StatusBadge kind="payment" status={p.payment.status} />
         ) : (
-          <span className="text-muted-foreground text-sm">Not started</span>
+          <span className="text-muted-foreground text-sm">{t.payments.table.notStarted}</span>
         ),
     },
     {
       key: "paidAt",
-      header: "Paid at",
-      cell: (p) => (p.payment?.paidAt ? formatDate(p.payment.paidAt, true) : "—"),
+      header: t.payments.table.paidAt,
+      cell: (p) => (p.payment?.paidAt ? f.date(p.payment.paidAt, true) : "—"),
     },
     {
       key: "fee",
-      header: "Amount",
+      header: t.payments.table.amount,
       align: "right",
       cell: (p) => (
-        <span className="font-medium tabular-nums">{formatCurrency(p.fee, p.currency)}</span>
+        <span className="font-medium tabular-nums">{f.currency(p.fee, p.currency)}</span>
       ),
     },
     {
       key: "actions",
-      header: "Actions",
+      header: t.payments.table.actions,
       align: "right",
       cell: (p) => (canPay(p) ? <PayNowButton parcelId={p.id} /> : null),
     },
@@ -83,19 +87,23 @@ export function PaymentsTable() {
       meta={data?.meta}
       onPageChange={setPage}
       onLimitChange={setLimit}
-      emptyMessage="No payments yet."
-      emptyDescription="Book a parcel and pay for it — the transaction will show up here."
+      emptyMessage={t.payments.table.empty}
+      emptyDescription={t.payments.table.emptyDescription}
       toolbar={
-        <>
-          <SearchInput
-            value={String(query.search ?? "")}
-            onSearch={setSearch}
-            placeholder="Tracking # or receiver…"
-            label="Search payments"
-          />
-          <SortSelect pagination={pagination} options={PAYMENT_SORT} />
-          <ClearFiltersButton pagination={pagination} />
-        </>
+        <TableToolbar
+          start={
+            <>
+              <SearchInput
+                value={String(query.search ?? "")}
+                onSearch={setSearch}
+                placeholder={t.payments.table.searchPlaceholder}
+                label={t.payments.table.searchLabel}
+              />
+              <ClearFiltersButton pagination={pagination} />
+            </>
+          }
+          end={<SortSelect pagination={pagination} options={PAYMENT_SORT} />}
+        />
       }
     />
   );

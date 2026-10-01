@@ -8,12 +8,14 @@ import { AppInput, AppSelect } from "@/components/shared/form";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PRICING } from "@/config/content";
 import { useHubs } from "@/hooks/useHubs";
+import { useI18n } from "@/i18n/client";
 import type { Hub } from "@/types";
 
 const ALL = "all";
 
 /** Paperfly-style coverage finder over the live hub list, grouped by city. */
 export function CoverageFinder() {
+  const { t, f, format, locale } = useI18n();
   const { data, isLoading, isError } = useHubs({ limit: 100 });
   const [search, setSearch] = useState("");
   const [zone, setZone] = useState(ALL);
@@ -30,10 +32,10 @@ export function CoverageFinder() {
 
   const byCity = new Map<string, Hub[]>();
   for (const hub of hubs) {
-    const city = hub.city || "Other";
+    const city = hub.city || t.landing.coverageFinder.otherCity;
     byCity.set(city, [...(byCity.get(city) ?? []), hub]);
   }
-  const cities = [...byCity.entries()].sort(([a], [b]) => a.localeCompare(b));
+  const cities = [...byCity.entries()].sort(([a], [b]) => a.localeCompare(b, locale));
 
   return (
     <div className="space-y-6">
@@ -42,18 +44,21 @@ export function CoverageFinder() {
           type="search"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search a city, area or hub…"
-          aria-label="Search coverage"
+          placeholder={t.landing.coverageFinder.searchPlaceholder}
+          aria-label={t.landing.coverageFinder.searchLabel}
           leftIcon={<Search />}
           containerClassName="flex-1"
         />
         <AppSelect
-          ariaLabel="Filter by zone"
+          ariaLabel={t.landing.coverageFinder.zoneLabel}
           value={zone}
           onValueChange={setZone}
           options={[
-            { value: ALL, label: "All zones" },
-            ...PRICING.zones.map((z) => ({ value: z.code, label: z.label })),
+            { value: ALL, label: t.landing.coverageFinder.allZones },
+            ...PRICING.zones.map((z) => ({
+              value: z.code,
+              label: t.enums.zone[z.code] ?? z.label,
+            })),
           ]}
           containerClassName="w-full sm:w-48"
         />
@@ -68,14 +73,14 @@ export function CoverageFinder() {
       ) : isError ? (
         <EmptyState
           icon={MapPin}
-          title="Coverage list unavailable"
-          description="We couldn't load the hub list right now. Please try again in a moment."
+          title={t.landing.coverageFinder.unavailableTitle}
+          description={t.landing.coverageFinder.unavailableDescription}
         />
       ) : cities.length === 0 ? (
         <EmptyState
           icon={MapPin}
-          title="No hubs match"
-          description="Try another city or area, or clear the zone filter."
+          title={t.landing.coverageFinder.emptyTitle}
+          description={t.landing.coverageFinder.emptyDescription}
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -84,7 +89,12 @@ export function CoverageFinder() {
               <header className="flex items-center justify-between border-b px-4 py-3">
                 <h3 className="font-semibold">{city}</h3>
                 <span className="text-muted-foreground text-sm">
-                  {cityHubs.length} hub{cityHubs.length === 1 ? "" : "s"}
+                  {format(
+                    cityHubs.length === 1
+                      ? t.landing.coverageFinder.hubCountOne
+                      : t.landing.coverageFinder.hubCountOther,
+                    { count: f.number(cityHubs.length) },
+                  )}
                 </span>
               </header>
               <ul className="divide-y">

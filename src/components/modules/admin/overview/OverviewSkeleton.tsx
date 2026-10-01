@@ -1,13 +1,17 @@
+"use client";
+
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useI18n } from "@/i18n/client";
 
 const TOTAL_KEYS = ["t1", "t2", "t3", "t4", "t5", "t6"];
 const PANEL_KEYS = ["p1", "p2", "p3"];
 
 export function OverviewSkeleton() {
+  const { t } = useI18n();
   return (
     <div className="space-y-6" role="status" aria-live="polite">
-      <span className="sr-only">Loading dashboard</span>
+      <span className="sr-only">{t.admin.overview.loading}</span>
       <Card className="gap-0 py-0">
         <CardHeader className="flex items-center justify-between border-b py-5">
           <div className="space-y-2">

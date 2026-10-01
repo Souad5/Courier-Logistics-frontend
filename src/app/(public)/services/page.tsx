@@ -12,88 +12,69 @@ import { PhotoCta } from "@/components/shared/PhotoCta";
 import { PhotoPanel } from "@/components/shared/PhotoPanel";
 import { PublicPageHeader, SectionHeading } from "@/components/shared/SectionHeading";
 import { FEATURES, PARCEL_TYPE_INFO } from "@/config/content";
+import { getI18n } from "@/i18n/server";
 import { pageMetadata } from "@/lib/seo";
 import { PARCEL_TYPES, type ParcelType } from "@/types";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Services",
-  description:
-    "Door-to-door delivery for documents, parcels, fragile and perishable goods — with live tracking, proof of delivery and smart retries.",
-  path: "/services",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return pageMetadata({
+    title: t.publicPages.services.meta.title,
+    description: t.publicPages.services.meta.description,
+    path: "/services",
+  });
+}
 
 // Unsplash photos — sources in src/assets/landing/CREDITS.md.
-const TYPE_PHOTOS: Record<ParcelType, { src: typeof documentsImg; alt: string }> = {
-  DOCUMENT: { src: documentsImg, alt: "A hand holding a sealed white envelope" },
-  PARCEL: { src: parcelImg, alt: "A neat stack of brown cardboard boxes" },
-  FRAGILE: { src: fragileImg, alt: "A small parcel marked Fragile, handle with care" },
-  PERISHABLE: {
-    src: perishableImg,
-    alt: "Fresh pineapples and oranges packed in a cardboard crate",
-  },
+// Alt text: `publicPages.services.types.photoAlts[type]`.
+const TYPE_PHOTOS: Record<ParcelType, typeof documentsImg> = {
+  DOCUMENT: documentsImg,
+  PARCEL: parcelImg,
+  FRAGILE: fragileImg,
+  PERISHABLE: perishableImg,
 };
 
-const TYPE_TIPS: Record<ParcelType, string> = {
-  DOCUMENT: "Contracts, certificates, letters",
-  PARCEL: "Clothes, books, electronics in boxes",
-  FRAGILE: "Glass, ceramics, screens — packed well",
-  PERISHABLE: "Food and produce that can't wait",
-};
-
+// Text: `publicPages.services.steps.items[key]`.
 const STEPS = [
-  {
-    icon: CreditCard,
-    title: "Book and pay",
-    text: "Choose the type, weight and hubs. See the fee, pay by card.",
-  },
-  {
-    icon: Warehouse,
-    title: "Hub pickup",
-    text: "An admin assigns a courier, who collects it from the origin hub.",
-  },
-  {
-    icon: Truck,
-    title: "In transit",
-    text: "Every scan — picked up, in transit, out for delivery — is timestamped.",
-  },
-  {
-    icon: Camera,
-    title: "Delivered with proof",
-    text: "The courier uploads a photo, visible on the tracking page.",
-  },
-];
+  { key: "book", icon: CreditCard },
+  { key: "pickup", icon: Warehouse },
+  { key: "transit", icon: Truck },
+  { key: "delivered", icon: Camera },
+] as const;
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const { t, f } = await getI18n();
+  const s = t.publicPages.services;
   return (
     <>
       <PublicPageHeader
         image={hubImg}
         imagePosition="50% 40%"
-        eyebrow="Services"
-        title="Door-to-door delivery for every kind of shipment."
-        description="Documents, everyday parcels, fragile items and perishables — booked online, carried by our couriers and tracked across every zone we serve."
+        eyebrow={s.header.eyebrow}
+        title={s.header.title}
+        description={s.header.description}
       />
 
       {/* Parcel types */}
       <section className="container mx-auto px-4 py-20 md:py-28">
         <FadeIn>
           <SectionHeading
-            eyebrow="What we carry"
-            title="Four parcel types, one booking flow."
-            description="Pick the type when you book so the courier knows how to handle it. The price is the same formula for all four."
+            eyebrow={s.types.eyebrow}
+            title={s.types.title}
+            description={s.types.description}
           />
         </FadeIn>
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {PARCEL_TYPES.map((type, index) => {
             const info = PARCEL_TYPE_INFO[type];
-            const photo = TYPE_PHOTOS[type];
+            const text = t.landing.content.parcelTypes[type];
             return (
               <FadeIn key={type} delay={index * 0.06} className="h-full">
                 <article className="group bg-card flex h-full flex-col overflow-hidden rounded-2xl shadow-sm ring-1 ring-black/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:ring-white/10">
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <Image
-                      src={photo.src}
-                      alt={photo.alt}
+                      src={TYPE_PHOTOS[type]}
+                      alt={s.types.photoAlts[type]}
                       fill
                       placeholder="blur"
                       sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
@@ -103,10 +84,10 @@ export default function ServicesPage() {
                   <div className="flex flex-1 flex-col gap-2 p-5">
                     <div className="flex items-center gap-2">
                       <info.icon className="size-4" aria-hidden />
-                      <h3 className="font-semibold">{info.label}</h3>
+                      <h3 className="font-semibold">{text.label}</h3>
                     </div>
-                    <p className="text-muted-foreground text-sm">{info.description}</p>
-                    <p className="mt-auto pt-2 text-sm font-medium">{TYPE_TIPS[type]}</p>
+                    <p className="text-muted-foreground text-sm">{text.description}</p>
+                    <p className="mt-auto pt-2 text-sm font-medium">{s.types.tips[type]}</p>
                   </div>
                 </article>
               </FadeIn>
@@ -119,10 +100,7 @@ export default function ServicesPage() {
       <section className="bg-muted/40 border-y">
         <div className="container mx-auto px-4 py-20 md:py-28">
           <FadeIn>
-            <SectionHeading
-              eyebrow="How a delivery works"
-              title="Four steps from booking to doorstep."
-            />
+            <SectionHeading eyebrow={s.steps.eyebrow} title={s.steps.title} />
           </FadeIn>
           <ol className="relative mt-14 grid gap-10 md:grid-cols-4 md:gap-6">
             <span
@@ -130,7 +108,7 @@ export default function ServicesPage() {
               className="bg-border absolute top-6 right-[12.5%] left-[12.5%] hidden h-px md:block"
             />
             {STEPS.map((step, index) => (
-              <li key={step.title}>
+              <li key={step.key}>
                 <FadeIn
                   delay={index * 0.1}
                   className="relative flex gap-4 md:flex-col md:items-center md:text-center"
@@ -138,12 +116,14 @@ export default function ServicesPage() {
                   <span className="bg-background relative grid size-12 shrink-0 place-items-center rounded-full shadow-md ring-1 ring-black/5 dark:ring-white/10">
                     <step.icon className="size-5" aria-hidden />
                     <span className="bg-signal text-background absolute -top-1 -right-1 grid size-5 place-items-center rounded-full font-mono text-[0.7rem] font-semibold">
-                      {index + 1}
+                      {f.number(index + 1)}
                     </span>
                   </span>
                   <div className="space-y-1">
-                    <h3 className="font-semibold">{step.title}</h3>
-                    <p className="text-muted-foreground text-sm text-pretty">{step.text}</p>
+                    <h3 className="font-semibold">{s.steps.items[step.key].title}</h3>
+                    <p className="text-muted-foreground text-sm text-pretty">
+                      {s.steps.items[step.key].text}
+                    </p>
                   </div>
                 </FadeIn>
               </li>
@@ -157,12 +137,12 @@ export default function ServicesPage() {
         <FadeIn>
           <PhotoPanel
             src={courierStreetImg}
-            alt="A courier carrying a parcel along a busy city street"
+            alt={s.included.photoAlt}
             className="aspect-[4/5] lg:aspect-[4/4.5]"
             caption={
               <p className="flex items-center gap-2 text-sm font-medium">
                 <PackageCheck className="size-4" aria-hidden />
-                Every parcel gets the same service — no add-ons to choose.
+                {s.included.caption}
               </p>
             }
           />
@@ -170,14 +150,14 @@ export default function ServicesPage() {
         <div className="space-y-8">
           <FadeIn>
             <SectionHeading
-              eyebrow="Included"
-              title="With every delivery."
-              description="Tracking, clear pricing, photo proof and retries come as standard."
+              eyebrow={s.included.eyebrow}
+              title={s.included.title}
+              description={s.included.description}
             />
           </FadeIn>
           <ul className="grid gap-4 sm:grid-cols-2">
             {FEATURES.map((feature, index) => (
-              <li key={feature.title}>
+              <li key={feature.key}>
                 <FadeIn
                   delay={index * 0.06}
                   className="bg-muted/40 hover:bg-muted h-full space-y-3 rounded-2xl p-5 transition-colors"
@@ -185,8 +165,10 @@ export default function ServicesPage() {
                   <span className="bg-background grid size-10 place-items-center rounded-xl shadow-sm">
                     <feature.icon className="size-5" aria-hidden />
                   </span>
-                  <h3 className="font-semibold">{feature.title}</h3>
-                  <p className="text-muted-foreground text-sm">{feature.description}</p>
+                  <h3 className="font-semibold">{t.landing.content.features[feature.key].title}</h3>
+                  <p className="text-muted-foreground text-sm">
+                    {t.landing.content.features[feature.key].description}
+                  </p>
                 </FadeIn>
               </li>
             ))}
@@ -195,10 +177,10 @@ export default function ServicesPage() {
       </section>
 
       <PhotoCta
-        title="Ready to book? It takes about a minute."
-        description="Create a free account, enter the parcel details and pay by card — we take it from there."
-        primary={{ label: "Send a parcel", href: "/register" }}
-        secondary={{ label: "See pricing", href: "/pricing" }}
+        title={s.cta.title}
+        description={s.cta.description}
+        primary={{ label: s.cta.primary, href: "/register" }}
+        secondary={{ label: s.cta.secondary, href: "/pricing" }}
       />
     </>
   );

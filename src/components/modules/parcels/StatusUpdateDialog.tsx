@@ -8,19 +8,23 @@ import { AppButton } from "@/components/shared/AppButton";
 import { AppDialog } from "@/components/shared/AppDialog";
 import { FormSelect, FormTextarea } from "@/components/shared/form";
 import { useUpdateParcelStatus } from "@/hooks/useParcels";
+import { useI18n } from "@/i18n/client";
 import type { Parcel } from "@/types";
 import { ALLOWED_TRANSITIONS, PARCEL_STATUSES } from "@/types/enums";
 
-const statusSchema = z.object({
-  status: z.enum(PARCEL_STATUSES),
-  note: z.union([z.literal(""), z.string().trim().min(2, "At least 2 characters").max(300)]),
-});
+const createStatusSchema = (minMessage: string) =>
+  z.object({
+    status: z.enum(PARCEL_STATUSES),
+    note: z.union([z.literal(""), z.string().trim().min(2, minMessage).max(300)]),
+  });
 
-type StatusValues = z.infer<typeof statusSchema>;
+type StatusValues = z.infer<ReturnType<typeof createStatusSchema>>;
 
 export function StatusUpdateDialog({ parcel, onClose }: { parcel: Parcel; onClose: () => void }) {
+  const { t, format } = useI18n();
+  const labels = t.parcels.statusUpdate;
   const { control, handleSubmit } = useForm<StatusValues>({
-    resolver: zodResolver(statusSchema),
+    resolver: zodResolver(createStatusSchema(format(t.validation.minChars, { n: 2 }))),
     defaultValues: { status: parcel.status, note: "" },
   });
 
@@ -36,15 +40,15 @@ export function StatusUpdateDialog({ parcel, onClose }: { parcel: Parcel; onClos
     <AppDialog
       open
       onOpenChange={(open) => !open && onClose()}
-      title="Update Status"
-      description={`Parcel #${parcel.trackingNumber}`}
+      title={labels.title}
+      description={format(t.parcels.parcelRef, { tracking: parcel.trackingNumber })}
       footer={
         <AppButton
           onClick={handleSubmit(onSubmit)}
           loading={update.isPending}
           disabled={currentStatus === parcel.status}
         >
-          Update
+          {labels.submit}
         </AppButton>
       }
     >
@@ -52,9 +56,9 @@ export function StatusUpdateDialog({ parcel, onClose }: { parcel: Parcel; onClos
         <FormSelect
           control={control}
           name="status"
-          label="New Status"
+          label={labels.newStatus}
           options={allowedNextStatuses.map((s) => ({
-            label: s.replace(/_/g, " "),
+            label: t.enums.parcelStatus[s],
             value: s,
           }))}
           required
@@ -62,8 +66,8 @@ export function StatusUpdateDialog({ parcel, onClose }: { parcel: Parcel; onClos
         <FormTextarea
           control={control}
           name="note"
-          label="Note"
-          placeholder="Add a note about this status change (optional)"
+          label={labels.note}
+          placeholder={labels.notePlaceholder}
         />
       </div>
     </AppDialog>

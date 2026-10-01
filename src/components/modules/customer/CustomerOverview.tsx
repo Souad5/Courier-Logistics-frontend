@@ -12,13 +12,14 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMyParcels } from "@/hooks/useParcels";
+import { useI18n } from "@/i18n/client";
 import { getErrorMessage } from "@/lib/api-client";
-import { formatCurrency, formatDate } from "@/lib/utils";
 
 const SKELETON_KEYS = ["a", "b", "c", "d"];
 
 /** Customer landing page: headline counts, what needs payment, and the latest shipments. */
 export function CustomerOverview() {
+  const { t, f, format } = useI18n();
   const recent = useMyParcels({ limit: 5 });
   const pending = useMyParcels({ limit: 1, status: "PENDING" });
   const delivered = useMyParcels({ limit: 1, status: "DELIVERED" });
@@ -46,21 +47,21 @@ export function CustomerOverview() {
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard
-          title="Total parcels"
-          value={recent.data?.meta?.total ?? 0}
+          title={t.customer.stats.total}
+          value={f.number(recent.data?.meta?.total ?? 0)}
           icon={Boxes}
           loading={recent.isLoading}
         />
         <StatCard
-          title="Pending"
-          value={pending.data?.meta?.total ?? 0}
-          hint="Not yet picked up"
+          title={t.customer.stats.pending}
+          value={f.number(pending.data?.meta?.total ?? 0)}
+          hint={t.customer.stats.pendingHint}
           icon={CreditCard}
           loading={pending.isLoading}
         />
         <StatCard
-          title="Delivered"
-          value={delivered.data?.meta?.total ?? 0}
+          title={t.customer.stats.delivered}
+          value={f.number(delivered.data?.meta?.total ?? 0)}
           icon={PackageCheck}
           loading={delivered.isLoading}
         />
@@ -68,10 +69,11 @@ export function CustomerOverview() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Latest parcels</CardTitle>
+          <CardTitle>{t.customer.latest.title}</CardTitle>
           <CardDescription>
-            Your five most recent shipments.
-            {awaitingPayment.length > 0 && ` ${awaitingPayment.length} waiting for payment.`}
+            {t.customer.latest.description}
+            {awaitingPayment.length > 0 &&
+              ` ${format(t.customer.latest.awaitingPayment, { n: f.number(awaitingPayment.length) })}`}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -84,11 +86,11 @@ export function CustomerOverview() {
           ) : parcels.length === 0 ? (
             <EmptyState
               icon={PackagePlus}
-              title="You haven't sent a parcel yet"
-              description="Book your first parcel and track it from here."
+              title={t.customer.latest.emptyTitle}
+              description={t.customer.latest.emptyDescription}
               action={
                 <AppButton asChild>
-                  <Link href="/customer/parcels/new">Send a parcel</Link>
+                  <Link href="/customer/parcels/new">{t.customer.latest.sendParcel}</Link>
                 </AppButton>
               }
             />
@@ -107,13 +109,14 @@ export function CustomerOverview() {
                       {p.trackingNumber}
                     </Link>
                     <p className="text-muted-foreground truncate text-sm">
-                      To {p.receiverName} · {formatDate(p.createdAt)}
+                      {format(t.customer.latest.to, {
+                        name: p.receiverName,
+                        date: f.date(p.createdAt),
+                      })}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm tabular-nums">
-                      {formatCurrency(p.fee, p.currency)}
-                    </span>
+                    <span className="text-sm tabular-nums">{f.currency(p.fee, p.currency)}</span>
                     <StatusBadge status={p.status} />
                     {p.status === "PENDING" && p.payment?.status !== "PAID" && (
                       <PayNowButton parcelId={p.id} />
@@ -126,7 +129,7 @@ export function CustomerOverview() {
           {parcels.length > 0 && (
             <AppButton asChild variant="link" className="mt-4 px-0">
               <Link href="/customer/parcels">
-                View all parcels <ArrowRight />
+                {t.customer.latest.viewAll} <ArrowRight />
               </Link>
             </AppButton>
           )}

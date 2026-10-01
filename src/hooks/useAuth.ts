@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { ENDPOINTS, ROLE_HOME } from "@/config/api.config";
+import { useI18n } from "@/i18n/client";
 import { apiClient, getErrorMessage } from "@/lib/api-client";
 import { authStorage } from "@/lib/auth-storage";
 import { useAuthStore } from "@/store/auth.store";
@@ -21,6 +22,7 @@ function resolveRedirect(role: Role, redirect: string | null): string {
 
 export function useAuth() {
   const router = useRouter();
+  const { t, format } = useI18n();
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const setSession = useAuthStore((s) => s.setSession);
@@ -40,14 +42,18 @@ export function useAuth() {
   const login = useMutation({
     mutationFn: (input: LoginInput) =>
       apiClient.post<AuthPayload>(ENDPOINTS.auth.login, input, { public: true }),
-    onSuccess: (result) => onAuthenticated(result.data, `Welcome back, ${result.data.user.name}!`),
+    onSuccess: (result) =>
+      onAuthenticated(
+        result.data,
+        format(t.nav.account.welcomeBack, { name: result.data.user.name }),
+      ),
     onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const register = useMutation({
     mutationFn: (input: RegisterInput) =>
       apiClient.post<AuthPayload>(ENDPOINTS.auth.register, input, { public: true }),
-    onSuccess: (result) => onAuthenticated(result.data, "Account created successfully."),
+    onSuccess: (result) => onAuthenticated(result.data, t.nav.account.accountCreated),
     onError: (error) => toast.error(getErrorMessage(error)),
   });
 
@@ -64,7 +70,7 @@ export function useAuth() {
     onSettled: () => {
       clear();
       queryClient.clear();
-      toast.success("Logged out.");
+      toast.success(t.nav.account.loggedOut);
       router.replace("/login");
       router.refresh();
     },

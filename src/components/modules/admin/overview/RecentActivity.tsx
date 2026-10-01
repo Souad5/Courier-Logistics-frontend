@@ -7,10 +7,11 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuditLogs } from "@/hooks/useAdmin";
+import { useI18n } from "@/i18n/client";
 import { getErrorMessage } from "@/lib/api-client";
-import { formatRelativeTime, humanize } from "@/lib/utils";
 
 export function RecentActivity() {
+  const { t, f, locale } = useI18n();
   const { data, isLoading, error, refetch } = useAuditLogs({ limit: 6, sortOrder: "desc" });
   const logs = data?.data.logs ?? [];
 
@@ -36,8 +37,8 @@ export function RecentActivity() {
     return (
       <EmptyState
         icon={ScrollText}
-        title="No activity yet"
-        description="Critical actions across the platform are recorded here."
+        title={t.admin.recentActivity.emptyTitle}
+        description={t.admin.recentActivity.emptyDescription}
       />
     );
   }
@@ -54,18 +55,20 @@ export function RecentActivity() {
               {(log.actor?.name ?? "S").charAt(0).toUpperCase()}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{humanize(log.action)}</p>
+              <p className="truncate text-sm font-medium">
+                {t.enums.auditAction[log.action] ?? log.action}
+              </p>
               <p className="text-muted-foreground truncate text-sm">
-                {log.actor?.name ?? "System"}
-                {log.entityType ? ` · ${humanize(log.entityType)}` : ""}
+                {log.actor?.name ?? t.admin.recentActivity.system}
+                {log.entityType ? ` · ${t.enums.entityType[log.entityType] ?? log.entityType}` : ""}
               </p>
             </div>
             <time
               dateTime={log.createdAt}
               className="text-muted-foreground shrink-0 text-sm"
-              title={new Date(log.createdAt).toLocaleString()}
+              title={new Date(log.createdAt).toLocaleString(locale === "bn" ? "bn-BD" : undefined)}
             >
-              {formatRelativeTime(log.createdAt)}
+              {f.relative(log.createdAt)}
             </time>
           </li>
         ))}
@@ -74,7 +77,7 @@ export function RecentActivity() {
         href="/admin/audit-logs"
         className="text-foreground focus-visible:ring-ring inline-block rounded text-sm font-medium hover:underline focus-visible:ring-2 focus-visible:outline-none"
       >
-        View all activity
+        {t.admin.recentActivity.viewAll}
       </Link>
     </div>
   );

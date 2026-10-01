@@ -34,7 +34,7 @@ export function SearchInput({
       placeholder={placeholder}
       aria-label={label}
       leftIcon={<Search />}
-      containerClassName="w-full sm:max-w-xs"
+      containerClassName="w-full sm:w-72 lg:w-64 2xl:w-72"
     />
   );
 }

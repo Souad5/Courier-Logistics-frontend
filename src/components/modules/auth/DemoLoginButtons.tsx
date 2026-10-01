@@ -7,6 +7,7 @@ import { useState } from "react";
 import { AppButton } from "@/components/shared/AppButton";
 import { DEMO_PASSWORD, demoAccounts } from "@/config/site";
 import { useAuth } from "@/hooks/useAuth";
+import { useI18n } from "@/i18n/client";
 import type { Role } from "@/types";
 
 const ROLE_ICONS: Record<Role, LucideIcon> = {
@@ -21,6 +22,7 @@ const ROLE_ICONS: Record<Role, LucideIcon> = {
  */
 export function DemoLoginButtons() {
   const { login } = useAuth();
+  const { t, format } = useI18n();
   const [pendingRole, setPendingRole] = useState<Role | null>(null);
 
   const handleDemoLogin = (role: Role, email: string) => {
@@ -32,12 +34,13 @@ export function DemoLoginButtons() {
     <div className="space-y-3">
       <div className="text-muted-foreground flex items-center gap-3 text-sm uppercase">
         <span className="bg-border h-px flex-1" />
-        1-click demo login
+        {t.auth.demo.heading}
         <span className="bg-border h-px flex-1" />
       </div>
       <div className="grid grid-cols-3 gap-2">
-        {demoAccounts.map(({ role, label, email }) => {
+        {demoAccounts.map(({ role, email }) => {
           const Icon = ROLE_ICONS[role];
+          const label = t.enums.role[role];
           return (
             <AppButton
               key={role}
@@ -49,7 +52,7 @@ export function DemoLoginButtons() {
               loading={pendingRole === role}
               leftIcon={<Icon />}
               onClick={() => handleDemoLogin(role, email)}
-              aria-label={`Log in as demo ${label}`}
+              aria-label={format(t.auth.demo.loginAs, { role: label })}
             >
               <span className="text-sm">{label}</span>
             </AppButton>

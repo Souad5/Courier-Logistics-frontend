@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { AppButton } from "@/components/shared/AppButton";
 import { AppDialog } from "@/components/shared/AppDialog";
 import { useUploadProofOfDelivery } from "@/hooks/useParcels";
+import { useI18n } from "@/i18n/client";
 import type { Parcel } from "@/types";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -20,6 +21,8 @@ export function ProofOfDeliveryDialog({
   parcel: Parcel;
   onClose: () => void;
 }) {
+  const { t, f, format } = useI18n();
+  const labels = t.parcels.proof;
   const upload = useUploadProofOfDelivery();
   const input = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -28,9 +31,11 @@ export function ProofOfDeliveryDialog({
   const choose = (picked: File | undefined) => {
     if (!picked) return;
     if (!ALLOWED_TYPES.includes(picked.type)) {
-      return toast.error("Only JPEG, PNG or WebP images are allowed.");
+      return toast.error(t.validation.imageTypes);
     }
-    if (picked.size > MAX_BYTES) return toast.error("Image must be 5 MB or smaller.");
+    if (picked.size > MAX_BYTES) {
+      return toast.error(format(t.validation.imageSize, { n: f.number(MAX_BYTES / 1024 / 1024) }));
+    }
     if (preview) URL.revokeObjectURL(preview);
     setFile(picked);
     setPreview(URL.createObjectURL(picked));
@@ -46,8 +51,8 @@ export function ProofOfDeliveryDialog({
     <AppDialog
       open
       onOpenChange={(open) => !open && !upload.isPending && onClose()}
-      title="Proof of delivery"
-      description={`Parcel #${parcel.trackingNumber}`}
+      title={labels.title}
+      description={format(t.parcels.parcelRef, { tracking: parcel.trackingNumber })}
       footer={
         <AppButton
           disabled={!file}
@@ -56,7 +61,7 @@ export function ProofOfDeliveryDialog({
             file && upload.mutate({ id: parcel.id, photo: file }, { onSuccess: onClose })
           }
         >
-          Upload photo
+          {labels.upload}
         </AppButton>
       }
     >
@@ -66,22 +71,20 @@ export function ProofOfDeliveryDialog({
           type="file"
           accept={ALLOWED_TYPES.join(",")}
           className="sr-only"
-          aria-label="Choose delivery photo"
+          aria-label={labels.chooseLabel}
           onChange={(event) => {
             choose(event.target.files?.[0]);
             event.target.value = "";
           }}
         />
         {parcel.proofOfDeliveryUrl && !preview && (
-          <p className="text-muted-foreground text-sm">
-            A photo is already uploaded. Choosing a new one replaces it.
-          </p>
+          <p className="text-muted-foreground text-sm">{labels.alreadyUploaded}</p>
         )}
         {preview ? (
           <div className="space-y-3">
             <Image
               src={preview}
-              alt="Selected delivery photo preview"
+              alt={labels.previewAlt}
               width={480}
               height={320}
               unoptimized
@@ -90,7 +93,7 @@ export function ProofOfDeliveryDialog({
             {upload.isPending && (
               <div
                 role="progressbar"
-                aria-label="Uploading photo"
+                aria-label={labels.uploading}
                 className="bg-muted h-1.5 overflow-hidden rounded-full"
               >
                 <div className="bg-signal h-full w-1/3 animate-pulse rounded-full" />
@@ -103,21 +106,19 @@ export function ProofOfDeliveryDialog({
                 disabled={upload.isPending}
                 onClick={() => input.current?.click()}
               >
-                Replace
+                {labels.replace}
               </AppButton>
               <AppButton variant="ghost" size="sm" disabled={upload.isPending} onClick={clear}>
-                Remove
+                {labels.remove}
               </AppButton>
             </div>
           </div>
         ) : (
           <AppButton variant="outline" onClick={() => input.current?.click()}>
-            Choose photo
+            {labels.choose}
           </AppButton>
         )}
-        <p className="text-muted-foreground text-sm">
-          JPEG, PNG or WebP, up to 5 MB. Available while a parcel is out for delivery or delivered.
-        </p>
+        <p className="text-muted-foreground text-sm">{labels.hint}</p>
       </div>
     </AppDialog>
   );

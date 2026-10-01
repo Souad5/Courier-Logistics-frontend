@@ -1,11 +1,14 @@
+"use client";
+
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { formatDate } from "@/lib/utils";
+import { useI18n } from "@/i18n/client";
 import type { ParcelStatusHistory } from "@/types";
 
 /** Vertical status history, newest first (the order the backend returns). */
 export function ParcelStatusTimeline({ history }: { history: ParcelStatusHistory[] }) {
+  const { t, f } = useI18n();
   if (history.length === 0) {
-    return <p className="text-muted-foreground text-sm">No status updates yet.</p>;
+    return <p className="text-muted-foreground text-sm">{t.tracking.result.noHistory}</p>;
   }
 
   return (
@@ -21,9 +24,7 @@ export function ParcelStatusTimeline({ history }: { history: ParcelStatusHistory
           />
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={entry.status} />
-            <time className="text-muted-foreground text-sm">
-              {formatDate(entry.createdAt, true)}
-            </time>
+            <time className="text-muted-foreground text-sm">{f.date(entry.createdAt, true)}</time>
           </div>
           {entry.location && <p className="mt-1 text-sm">{entry.location}</p>}
           {entry.note && <p className="text-muted-foreground mt-0.5 text-sm">{entry.note}</p>}

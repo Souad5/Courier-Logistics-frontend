@@ -10,20 +10,21 @@ import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { FilterSelect } from "@/components/shared/FilterSelect";
 import { SearchInput } from "@/components/shared/SearchInput";
-import { DEFAULT_SORT_OPTIONS, SortSelect } from "@/components/shared/SortSelect";
+import { DEFAULT_SORT_OPTIONS, type SortOption, SortSelect } from "@/components/shared/SortSelect";
+import { TableToolbar } from "@/components/shared/TableToolbar";
 import { PRICING } from "@/config/content";
 import { useDeleteHub, useHubs } from "@/hooks/useHubs";
 import { usePagination } from "@/hooks/usePagination";
+import { useI18n } from "@/i18n/client";
 import { getErrorMessage } from "@/lib/api-client";
-import { formatDate } from "@/lib/utils";
 import type { Hub } from "@/types";
 
 // Within the backend's sortableFields (hub.service.ts).
-const HUB_SORT = [
+const HUB_SORT: SortOption[] = [
   ...DEFAULT_SORT_OPTIONS,
-  { value: "name:asc", label: "Name: A to Z" },
-  { value: "city:asc", label: "City: A to Z" },
-  { value: "zoneName:asc", label: "Zone: A to Z" },
+  { value: "name:asc", key: "nameAsc" },
+  { value: "city:asc", key: "cityAsc" },
+  { value: "zoneName:asc", key: "zoneAsc" },
 ];
 
 /**
@@ -31,6 +32,8 @@ const HUB_SORT = [
  * Must render inside <Suspense>.
  */
 export function HubsTable() {
+  const { t, f, format } = useI18n();
+  const labels = t.hubs;
   const pagination = usePagination();
   const { query, setPage, setLimit, setSearch, setFilter } = pagination;
   const { data, isLoading, isFetching, error, refetch } = useHubs(query);
@@ -40,23 +43,23 @@ export function HubsTable() {
   const [hubToDelete, setHubToDelete] = useState<Hub | null>(null);
 
   const columns: DataTableColumn<Hub>[] = [
-    { key: "name", header: "Hub name", cell: (h) => h.name },
+    { key: "name", header: labels.columns.name, cell: (h) => h.name },
     {
       key: "code",
-      header: "Code",
+      header: labels.columns.code,
       cell: (h) => <span className="font-mono text-sm">{h.code}</span>,
     },
-    { key: "zone", header: "Zone", cell: (h) => h.zoneName || h.zoneCode },
-    { key: "city", header: "City", cell: (h) => h.city || "—" },
-    { key: "created", header: "Created", cell: (h) => formatDate(h.createdAt) },
+    { key: "zone", header: labels.columns.zone, cell: (h) => h.zoneName || h.zoneCode },
+    { key: "city", header: labels.columns.city, cell: (h) => h.city || "—" },
+    { key: "created", header: labels.columns.created, cell: (h) => f.date(h.createdAt) },
     {
       key: "actions",
-      header: "Actions",
+      header: labels.columns.actions,
       align: "right",
       cell: (h) => (
         <div className="flex items-center justify-end gap-2">
           <AppButton variant="link" size="sm" onClick={() => setSelectedHub(h)}>
-            Edit
+            {labels.edit}
           </AppButton>
           <AppButton
             variant="link"
@@ -64,7 +67,7 @@ export function HubsTable() {
             className="text-destructive"
             onClick={() => setHubToDelete(h)}
           >
-            Delete
+            {labels.delete}
           </AppButton>
         </div>
       ),
@@ -83,33 +86,44 @@ export function HubsTable() {
         meta={data?.meta}
         onPageChange={setPage}
         onLimitChange={setLimit}
-        emptyMessage="No hubs found."
-        emptyDescription="Try changing the search or zone filter, or create a hub."
+        emptyMessage={labels.empty}
+        emptyDescription={labels.emptyDescription}
         toolbar={
-          <>
-            <SearchInput
-              value={String(query.search ?? "")}
-              onSearch={setSearch}
-              placeholder="Search name, zone or city…"
-              label="Search hubs"
-            />
-            <FilterSelect
-              label="Filter by zone"
-              value={query.zoneCode as string | undefined}
-              allLabel="All zones"
-              options={PRICING.zones.map((z) => ({ value: z.code, label: z.label }))}
-              onChange={(v) => setFilter("zoneCode", v)}
-            />
-            <SortSelect pagination={pagination} options={HUB_SORT} />
-            <ClearFiltersButton pagination={pagination} />
-            <AppButton
-              className="sm:ml-auto"
-              leftIcon={<Plus />}
-              onClick={() => setSelectedHub({} as Hub)}
-            >
-              Create hub
-            </AppButton>
-          </>
+          <TableToolbar
+            start={
+              <>
+                <SearchInput
+                  value={String(query.search ?? "")}
+                  onSearch={setSearch}
+                  placeholder={labels.search}
+                  label={labels.searchLabel}
+                />
+                <ClearFiltersButton pagination={pagination} />
+              </>
+            }
+            end={
+              <>
+                <FilterSelect
+                  label={labels.zoneFilter}
+                  value={query.zoneCode as string | undefined}
+                  allLabel={labels.allZones}
+                  options={PRICING.zones.map((z) => ({
+                    value: z.code,
+                    label: t.enums.zone[z.code] ?? z.code,
+                  }))}
+                  onChange={(v) => setFilter("zoneCode", v)}
+                />
+                <SortSelect pagination={pagination} options={HUB_SORT} />
+                <AppButton
+                  className="col-span-2 sm:col-auto"
+                  leftIcon={<Plus />}
+                  onClick={() => setSelectedHub({} as Hub)}
+                >
+                  {labels.create}
+                </AppButton>
+              </>
+            }
+          />
         }
       />
 
@@ -122,8 +136,8 @@ export function HubsTable() {
 
       {hubToDelete && (
         <ConfirmDialog
-          title="Delete Hub"
-          description={`Are you sure you want to delete "${hubToDelete.name}"? This cannot be undone.`}
+          title={labels.deleteTitle}
+          description={format(labels.deleteDescription, { name: hubToDelete.name })}
           onConfirm={() => deleteHub.mutateAsync(hubToDelete.id)}
           open
           onOpenChange={(open) => !open && setHubToDelete(null)}

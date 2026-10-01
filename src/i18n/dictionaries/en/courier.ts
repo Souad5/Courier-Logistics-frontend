@@ -1,0 +1,56 @@
+export const courier = {
+  pages: {
+    tasks: { title: "My Tasks", description: "Parcels assigned to you." },
+    earnings: { title: "Earnings", description: "What you've earned from completed deliveries." },
+    availability: {
+      title: "Availability",
+      description: "Toggle whether you can receive new assignments.",
+    },
+  },
+  tasks: {
+    quickFilters: {
+      all: "All assigned",
+      outForDelivery: "Out for delivery",
+      deliveryFailed: "Delivery failed",
+      delivered: "Delivered",
+    },
+    empty: "No tasks assigned to you yet.",
+    emptyDescription: "Parcels an admin assigns to you will show up here.",
+  },
+  earnings: {
+    /** {n} is how many deliveries the figures cover. */
+    latest: "Earnings · latest {n}",
+    total: "Total earnings",
+    completed: "Completed deliveries",
+    average: "Average per delivery",
+    partialNote: "Earnings figures cover your {n} most recent deliveries.",
+    chartTitle: "Earnings by month",
+    chartDescription: "Delivery fees from parcels delivered in the last six months.",
+    series: "Earnings",
+    emptyTitle: "No earnings in the last six months",
+    emptyDescription: "Fees from parcels you deliver will show up here.",
+    deliveredHeading: "Delivered parcels",
+    columns: { delivered: "Delivered", earnings: "Earnings" },
+    tableEmpty: "No completed deliveries yet.",
+    tableEmptyDescription: "Parcels you mark as delivered appear here with their fee.",
+  },
+  availability: {
+    dutyTitle: "Duty status",
+    dutyDescription: "Controls whether you can receive new assignments.",
+    available: "Available",
+    unavailable: "Unavailable",
+    availableHint: "You're visible to admins for new parcels.",
+    unavailableHint: "You won't be offered new parcels until you switch back on.",
+    goUnavailable: "Go unavailable",
+    goAvailable: "Go available",
+    howItWorks: "How it works",
+    howItWorksPoints: [
+      "While available, admins can assign new parcels to you.",
+      "Going unavailable never removes parcels you already hold — finish or update them as usual.",
+      "Switch off at the end of your shift so new work goes to someone on duty.",
+    ],
+    workloadTitle: "Your workload",
+    workloadDescription: "Parcels currently assigned to you.",
+    rating: "Rating",
+  },
+};

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { AppButton } from "@/components/shared/AppButton";
 import { ENDPOINTS } from "@/config/api.config";
+import { useI18n } from "@/i18n/client";
 import { apiClient, getErrorMessage } from "@/lib/api-client";
 import type { InitiatePaymentPayload } from "@/types";
 
@@ -15,6 +16,7 @@ import type { InitiatePaymentPayload } from "@/types";
  * actually marks the payment PAID.
  */
 export function PayNowButton({ parcelId, className }: { parcelId: string; className?: string }) {
+  const { t } = useI18n();
   const initiate = useMutation({
     mutationFn: () => {
       const origin = window.location.origin;
@@ -37,7 +39,7 @@ export function PayNowButton({ parcelId, className }: { parcelId: string; classN
       leftIcon={<CreditCard />}
       onClick={() => initiate.mutate()}
     >
-      Pay now
+      {t.payments.payNow}
     </AppButton>
   );
 }

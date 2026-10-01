@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { env } from "@/env";
+import type { Dictionary } from "@/i18n/dictionaries";
 import type { Role } from "@/types";
 
 export const siteConfig = {
@@ -33,40 +34,46 @@ export const siteConfig = {
   contactEmail: "support@swiftparcel.example",
 };
 
+/** Labels come from the dictionary (`nav.public` / `nav.dashboard`) via `key`. */
+export interface PublicNavItem {
+  key: keyof Dictionary["nav"]["public"];
+  href: string;
+}
+
 export interface NavItem {
-  title: string;
+  key: keyof Dictionary["nav"]["dashboard"];
   href: string;
   icon?: LucideIcon;
 }
 
-export const publicNav: NavItem[] = [
-  { title: "Home", href: "/" },
-  { title: "Services", href: "/services" },
-  { title: "Pricing", href: "/pricing" },
-  { title: "Coverage", href: "/#coverage" },
-  { title: "About", href: "/about" },
-  { title: "Contact", href: "/contact" },
+export const publicNav: PublicNavItem[] = [
+  { key: "home", href: "/" },
+  { key: "services", href: "/services" },
+  { key: "pricing", href: "/pricing" },
+  { key: "coverage", href: "/#coverage" },
+  { key: "about", href: "/about" },
+  { key: "contact", href: "/contact" },
 ];
 
 export const dashboardNav: Record<Role, NavItem[]> = {
   ADMIN: [
-    { title: "Overview", href: "/admin", icon: LayoutDashboard },
-    { title: "Parcels", href: "/admin/parcels", icon: Boxes },
-    { title: "Users", href: "/admin/users", icon: Users },
-    { title: "Hubs", href: "/admin/hubs", icon: MapPin },
-    { title: "Audit Logs", href: "/admin/audit-logs", icon: ScrollText },
+    { key: "overview", href: "/admin", icon: LayoutDashboard },
+    { key: "parcels", href: "/admin/parcels", icon: Boxes },
+    { key: "users", href: "/admin/users", icon: Users },
+    { key: "hubs", href: "/admin/hubs", icon: MapPin },
+    { key: "auditLogs", href: "/admin/audit-logs", icon: ScrollText },
   ],
   CUSTOMER: [
-    { title: "My Activity", href: "/customer", icon: LayoutDashboard },
-    { title: "My Parcels", href: "/customer/parcels", icon: Boxes },
-    { title: "Send a Parcel", href: "/customer/parcels/new", icon: PackagePlus },
-    { title: "Payments", href: "/customer/payments", icon: CreditCard },
-    { title: "Profile", href: "/customer/profile", icon: User },
+    { key: "myActivity", href: "/customer", icon: LayoutDashboard },
+    { key: "myParcels", href: "/customer/parcels", icon: Boxes },
+    { key: "sendParcel", href: "/customer/parcels/new", icon: PackagePlus },
+    { key: "payments", href: "/customer/payments", icon: CreditCard },
+    { key: "profile", href: "/customer/profile", icon: User },
   ],
   COURIER: [
-    { title: "My Tasks", href: "/courier", icon: ClipboardList },
-    { title: "Earnings", href: "/courier/earnings", icon: Wallet },
-    { title: "Availability", href: "/courier/availability", icon: Power },
+    { key: "myTasks", href: "/courier", icon: ClipboardList },
+    { key: "earnings", href: "/courier/earnings", icon: Wallet },
+    { key: "availability", href: "/courier/availability", icon: Power },
   ],
 };
 

@@ -7,37 +7,23 @@ import { usePathname } from "next/navigation";
 
 import deliverImg from "@/assets/landing/deliver.jpg";
 import sendImg from "@/assets/landing/send.jpg";
+import { useI18n } from "@/i18n/client";
 
-const PANELS: Record<
-  "login" | "register",
-  { image: StaticImageData; title: string; points: string[] }
-> = {
-  login: {
-    image: deliverImg,
-    title: "Welcome back. Your parcels are right where you left them.",
-    points: [
-      "Track every parcel with a timestamped history",
-      "Pay pending parcels by card in a few clicks",
-      "Couriers pick up their task list instantly",
-    ],
-  },
-  register: {
-    image: sendImg,
-    title: "Send your first parcel in four short steps.",
-    points: [
-      "See the exact fee before you pay",
-      "Photo proof on every delivery",
-      "Or sign up as a courier and start delivering",
-    ],
-  },
+const IMAGES: Record<"login" | "register", StaticImageData> = {
+  login: deliverImg,
+  register: sendImg,
 };
 
 /** Photo side of the auth layout; the image and copy follow the current page. */
 export function AuthPhotoPanel() {
   const pathname = usePathname();
   const reduceMotion = useReducedMotion();
+  const { t } = useI18n();
   const key = pathname.startsWith("/register") ? "register" : "login";
-  const panel = PANELS[key];
+  const panel =
+    key === "register"
+      ? { title: t.auth.panel.registerTitle, points: t.auth.panel.registerPoints }
+      : { title: t.auth.panel.loginTitle, points: t.auth.panel.loginPoints };
 
   return (
     <aside className="relative isolate m-3 hidden overflow-hidden rounded-3xl text-white lg:flex">
@@ -49,7 +35,7 @@ export function AuthPhotoPanel() {
         transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
       >
         <Image
-          src={panel.image}
+          src={IMAGES[key]}
           alt=""
           fill
           placeholder="blur"
@@ -64,7 +50,7 @@ export function AuthPhotoPanel() {
 
       <div className="flex w-full flex-col justify-between p-10 xl:p-14">
         <p className="font-mono text-sm tracking-widest text-white/80 uppercase">
-          Courier delivery in Bangladesh
+          {t.auth.panel.eyebrow}
         </p>
         <motion.div
           key={`${key}-copy`}
@@ -84,7 +70,7 @@ export function AuthPhotoPanel() {
               </li>
             ))}
           </ul>
-          <p className="text-sm text-white/60">Payments are processed by Stripe in test mode.</p>
+          <p className="text-sm text-white/60">{t.auth.panel.stripeNote}</p>
         </motion.div>
       </div>
     </aside>

@@ -10,38 +10,40 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useI18n } from "@/i18n/client";
 import type { DashboardStats, ParcelStatus } from "@/types";
 
 import { CHART_COLORS } from "./chart-theme";
 
-const GROUPS: Array<{ key: string; name: string; color: string; statuses: ParcelStatus[] }> = [
-  { key: "delivered", name: "Delivered", color: CHART_COLORS.success, statuses: ["DELIVERED"] },
+type GroupKey = "delivered" | "progress" | "pending" | "problem";
+
+const GROUPS: Array<{ key: GroupKey; color: string; statuses: ParcelStatus[] }> = [
+  { key: "delivered", color: CHART_COLORS.success, statuses: ["DELIVERED"] },
   {
     key: "progress",
-    name: "In progress",
     color: CHART_COLORS.primary,
     statuses: ["ACCEPTED", "PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY"],
   },
-  { key: "pending", name: "Awaiting pickup", color: CHART_COLORS.warning, statuses: ["PENDING"] },
+  { key: "pending", color: CHART_COLORS.warning, statuses: ["PENDING"] },
   {
     key: "problem",
-    name: "Problem or ended",
     color: CHART_COLORS.danger,
     statuses: ["DELIVERY_FAILED", "RETURN_TO_SENDER", "RETURNED", "CANCELLED"],
   },
 ];
-
-const chartConfig = Object.fromEntries(
-  GROUPS.map((g) => [g.key, { label: g.name, color: g.color }]),
-) satisfies ChartConfig;
 
 export function StatusDistributionChart({
   breakdown,
 }: {
   breakdown: DashboardStats["statusBreakdown"];
 }) {
+  const { t, f } = useI18n();
+  const chartConfig = Object.fromEntries(
+    GROUPS.map((g) => [g.key, { label: t.admin.statusChart[g.key], color: g.color }]),
+  ) satisfies ChartConfig;
   const data = GROUPS.map((group) => ({
     ...group,
+    name: t.admin.statusChart[group.key],
     value: breakdown
       .filter((row) => group.statuses.includes(row.status))
       .reduce((sum, row) => sum + row.count, 0),
@@ -53,8 +55,8 @@ export function StatusDistributionChart({
     return (
       <EmptyState
         icon={PackageSearch}
-        title="No parcels yet"
-        description="The status split appears once parcels are booked."
+        title={t.admin.statusChart.emptyTitle}
+        description={t.admin.statusChart.emptyDescription}
       />
     );
   }
@@ -82,8 +84,8 @@ export function StatusDistributionChart({
         </ChartContainer>
         <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
           <div>
-            <p className="text-2xl font-semibold tabular-nums">{total}</p>
-            <p className="text-muted-foreground text-sm">parcels</p>
+            <p className="text-2xl font-semibold tabular-nums">{f.number(total)}</p>
+            <p className="text-muted-foreground text-sm">{t.admin.statusChart.parcels}</p>
           </div>
         </div>
       </div>
@@ -99,8 +101,10 @@ export function StatusDistributionChart({
               {d.name}
             </span>
             <span className="text-muted-foreground tabular-nums">
-              {d.value}
-              <span className="ml-1 text-sm">({Math.round((d.value / total) * 100)}%)</span>
+              {f.number(d.value)}
+              <span className="ml-1 text-sm">
+                ({f.number(Math.round((d.value / total) * 100))}%)
+              </span>
             </span>
           </li>
         ))}

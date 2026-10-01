@@ -1,20 +1,22 @@
 "use client";
 
 import type { usePagination } from "@/hooks/usePagination";
+import { useI18n } from "@/i18n/client";
+import type { Dictionary } from "@/i18n/dictionaries";
 
 import { AppSelect } from "./form";
 
 export interface SortOption {
   /** `${sortBy}:${sortOrder}`; the field must be in the backend's sortableFields. */
   value: string;
-  label: string;
+  key: keyof Dictionary["common"]["sort"];
 }
 
 const NEWEST = "createdAt:desc";
 
 export const DEFAULT_SORT_OPTIONS: SortOption[] = [
-  { value: NEWEST, label: "Newest first" },
-  { value: "createdAt:asc", label: "Oldest first" },
+  { value: NEWEST, key: "newestFirst" },
+  { value: "createdAt:asc", key: "oldestFirst" },
 ];
 
 /** Sort dropdown stored as ?sortBy=&sortOrder= (newest first is the backend default). */
@@ -25,6 +27,7 @@ export function SortSelect({
   pagination: ReturnType<typeof usePagination>;
   options?: SortOption[];
 }) {
+  const { t } = useI18n();
   const { query, setParams } = pagination;
   const current =
     query.sortBy || query.sortOrder
@@ -33,14 +36,14 @@ export function SortSelect({
 
   return (
     <AppSelect
-      ariaLabel="Sort by"
+      ariaLabel={t.common.filters.sortBy}
       value={current}
       onValueChange={(next) => {
         const [sortBy, sortOrder] = next.split(":");
         setParams(next === NEWEST ? { sortBy: null, sortOrder: null } : { sortBy, sortOrder });
       }}
-      options={options}
-      containerClassName="w-full sm:w-48"
+      options={options.map((o) => ({ value: o.value, label: t.common.sort[o.key] }))}
+      containerClassName="w-full sm:w-44"
     />
   );
 }

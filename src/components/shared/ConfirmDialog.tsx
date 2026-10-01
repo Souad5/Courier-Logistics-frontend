@@ -2,6 +2,8 @@
 
 import { type ReactNode, useState } from "react";
 
+import { useI18n } from "@/i18n/client";
+
 import { AppButton } from "./AppButton";
 import { AppDialog } from "./AppDialog";
 
@@ -27,13 +29,14 @@ export function ConfirmDialog({
   trigger,
   title,
   description,
-  confirmText = "Confirm",
-  cancelText = "Cancel",
+  confirmText,
+  cancelText,
   destructive = false,
   onConfirm,
   open: controlledOpen,
   onOpenChange,
 }: ConfirmDialogProps) {
+  const { t } = useI18n();
   const [internalOpen, setInternalOpen] = useState(false);
   const [pending, setPending] = useState(false);
 
@@ -69,14 +72,14 @@ export function ConfirmDialog({
       footer={
         <>
           <AppButton variant="outline" disabled={pending} onClick={() => setOpen(false)}>
-            {cancelText}
+            {cancelText ?? t.common.actions.cancel}
           </AppButton>
           <AppButton
             variant={destructive ? "destructive" : "default"}
             loading={pending}
             onClick={handleConfirm}
           >
-            {confirmText}
+            {confirmText ?? t.common.actions.confirm}
           </AppButton>
         </>
       }

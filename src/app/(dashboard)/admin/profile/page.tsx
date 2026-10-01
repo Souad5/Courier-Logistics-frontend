@@ -2,13 +2,18 @@ import type { Metadata } from "next";
 
 import { ProfileForm } from "@/components/modules/profile/ProfileForm";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { getI18n } from "@/i18n/server";
 
-export const metadata: Metadata = { title: "Profile" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return { title: t.profile.page.title };
+}
 
-export default function AdminProfilePage() {
+export default async function AdminProfilePage() {
+  const { t } = await getI18n();
   return (
     <>
-      <PageHeader title="Profile" description="Your account details." />
+      <PageHeader title={t.profile.page.title} description={t.profile.page.description} />
       <ProfileForm />
     </>
   );

@@ -1,0 +1,32 @@
+export const profile = {
+  page: { title: "Profile", description: "Your account details." },
+  uploadPhoto: "Upload photo",
+  photoHint: "JPG or PNG, up to 5 MB. Saved when you click Save changes.",
+  personal: {
+    title: "Personal information",
+    description: "How couriers and support can reach you.",
+    fullName: "Full name",
+    phone: "Phone",
+    save: "Save changes",
+  },
+  account: {
+    title: "Account",
+    description: "These details are managed by the platform.",
+    email: "Email",
+    role: "Role",
+    signIn: "Sign-in method",
+    google: "Google",
+    password: "Email and password",
+    memberSince: "Member since",
+    emailVerified: "Email verified",
+    yes: "Yes",
+    notYet: "Not yet",
+    status: "Account status",
+  },
+  errors: {
+    nameMin: "Name must be at least 2 characters",
+    tooShort: "Too short",
+    tooLong: "Too long",
+    url: "Enter a valid URL",
+  },
+};

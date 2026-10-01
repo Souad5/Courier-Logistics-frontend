@@ -1,4 +1,5 @@
 import { AuthPhotoPanel } from "@/components/modules/auth/AuthPhotoPanel";
+import { LanguageToggle } from "@/components/shared/LanguageToggle";
 import { Logo } from "@/components/shared/Logo";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
@@ -8,7 +9,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="flex flex-col">
         <header className="flex items-center justify-between p-4 md:p-6">
           <Logo />
-          <ThemeToggle />
+          <div className="flex items-center gap-1">
+            <LanguageToggle />
+            <ThemeToggle />
+          </div>
         </header>
         <main className="flex flex-1 items-center justify-center px-4 pb-16">
           <div className="w-full max-w-sm">{children}</div>

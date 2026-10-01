@@ -1,8 +1,13 @@
+"use client";
+
 import { TriangleAlert } from "lucide-react";
+
+import { useI18n } from "@/i18n/client";
 
 import { AppButton } from "./AppButton";
 
 export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  const { t } = useI18n();
   return (
     <div
       role="alert"
@@ -10,12 +15,12 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
     >
       <TriangleAlert className="text-destructive size-6" aria-hidden />
       <div className="space-y-1">
-        <p className="font-medium">Something went wrong</p>
+        <p className="font-medium">{t.common.states.somethingWentWrong}</p>
         <p className="text-muted-foreground text-sm">{message}</p>
       </div>
       {onRetry && (
         <AppButton variant="outline" size="sm" onClick={onRetry}>
-          Try again
+          {t.common.actions.tryAgain}
         </AppButton>
       )}
     </div>

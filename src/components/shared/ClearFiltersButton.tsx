@@ -3,6 +3,7 @@
 import { X } from "lucide-react";
 
 import type { usePagination } from "@/hooks/usePagination";
+import { useI18n } from "@/i18n/client";
 
 import { AppButton } from "./AppButton";
 
@@ -12,10 +13,11 @@ export function ClearFiltersButton({
 }: {
   pagination: ReturnType<typeof usePagination>;
 }) {
+  const { t } = useI18n();
   if (!pagination.hasFilters) return null;
   return (
     <AppButton variant="ghost" leftIcon={<X />} onClick={pagination.clearFilters}>
-      Clear filters
+      {t.common.filters.clear}
     </AppButton>
   );
 }

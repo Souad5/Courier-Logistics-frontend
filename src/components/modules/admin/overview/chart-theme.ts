@@ -1,3 +1,4 @@
+import type { Locale } from "@/i18n/config";
 import type { DashboardTimelinePoint } from "@/types";
 
 export const CHART_COLORS = {
@@ -8,8 +9,8 @@ export const CHART_COLORS = {
   success: "var(--chart-5)",
 };
 
-export function formatDayLabel(date: string): string {
-  return new Date(`${date}T00:00:00Z`).toLocaleDateString("en", {
+export function formatDayLabel(date: string, locale: Locale = "en"): string {
+  return new Date(`${date}T00:00:00Z`).toLocaleDateString(locale === "bn" ? "bn-BD" : "en", {
     month: "short",
     day: "numeric",
     timeZone: "UTC",

@@ -9,18 +9,22 @@ import { AppDialog } from "@/components/shared/AppDialog";
 import { FormSelect } from "@/components/shared/form";
 import { useAssignParcel } from "@/hooks/useParcels";
 import { useUsers } from "@/hooks/useUsers";
+import { useI18n } from "@/i18n/client";
 import type { Parcel } from "@/types";
 
-const assignSchema = z.object({
-  courierId: z.string().min(1, "Select a courier"),
-  destinationHubId: z.string(),
-});
+const createAssignSchema = (required: string) =>
+  z.object({
+    courierId: z.string().min(1, required),
+    destinationHubId: z.string(),
+  });
 
-type AssignValues = z.infer<typeof assignSchema>;
+type AssignValues = z.infer<ReturnType<typeof createAssignSchema>>;
 
 export function AssignParcelDialog({ parcel, onClose }: { parcel: Parcel; onClose: () => void }) {
+  const { t, format } = useI18n();
+  const labels = t.parcels.assign;
   const { control, handleSubmit } = useForm<AssignValues>({
-    resolver: zodResolver(assignSchema),
+    resolver: zodResolver(createAssignSchema(labels.required)),
     defaultValues: {
       courierId: "",
       destinationHubId: parcel.destinationHubId ?? "",
@@ -43,11 +47,11 @@ export function AssignParcelDialog({ parcel, onClose }: { parcel: Parcel; onClos
     <AppDialog
       open
       onOpenChange={(open) => !open && onClose()}
-      title="Assign Courier"
-      description={`Parcel #${parcel.trackingNumber}`}
+      title={labels.title}
+      description={format(t.parcels.parcelRef, { tracking: parcel.trackingNumber })}
       footer={
         <AppButton onClick={handleSubmit(onSubmit)} loading={assign.isPending}>
-          Assign
+          {labels.submit}
         </AppButton>
       }
     >
@@ -55,8 +59,8 @@ export function AssignParcelDialog({ parcel, onClose }: { parcel: Parcel; onClos
         <FormSelect
           control={control}
           name="courierId"
-          label="Courier"
-          placeholder={couriersLoading ? "Loading couriers…" : "Select a courier"}
+          label={labels.courier}
+          placeholder={couriersLoading ? labels.loading : labels.placeholder}
           options={couriers.map((c) => ({ label: c.name, value: c.id }))}
           required
         />

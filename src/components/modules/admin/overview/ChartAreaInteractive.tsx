@@ -15,31 +15,23 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { cn, formatCompact, formatCurrency } from "@/lib/utils";
+import { useI18n } from "@/i18n/client";
+import { cn } from "@/lib/utils";
 import type { DashboardPeriod } from "@/types";
 
 import { formatDayLabel, toWeekly } from "./chart-theme";
 
-export const TIME_RANGES = [
-  { days: 365, label: "Last 12 months" },
-  { days: 90, label: "Last 3 months" },
-  { days: 30, label: "Last 30 days" },
-  { days: 7, label: "Last 7 days" },
-] as const;
+/** Labels live in t.admin.chart.ranges, keyed by the day count. */
+export const TIME_RANGES = [{ days: 365 }, { days: 90 }, { days: 30 }, { days: 7 }] as const;
 
 type Metric = "revenue" | "parcels";
 
-const chartConfig = {
-  revenue: { label: "Revenue", color: "var(--chart-1)" },
-  parcels: { label: "Booked", color: "var(--chart-1)" },
-  delivered: { label: "Delivered", color: "var(--chart-2)" },
-} satisfies ChartConfig;
-
 function Delta({ current, previous }: { current: number; previous: number }) {
+  const { t, f } = useI18n();
   if (previous === 0) {
     return (
       <span className="text-muted-foreground text-sm">
-        {current === 0 ? "No activity in either period" : "No activity in the previous period"}
+        {current === 0 ? t.admin.chart.noActivityEither : t.admin.chart.noActivityPrevious}
       </span>
     );
   }
@@ -55,8 +47,8 @@ function Delta({ current, previous }: { current: number; previous: number }) {
     >
       <Icon className="size-3.5" aria-hidden />
       {up ? "+" : "−"}
-      {Math.abs(change).toFixed(Math.abs(change) >= 10 ? 0 : 1)}%
-      <span className="text-muted-foreground font-normal">vs previous period</span>
+      {f.number(Math.abs(change), { maximumFractionDigits: Math.abs(change) >= 10 ? 0 : 1 })}%
+      <span className="text-muted-foreground font-normal">{t.admin.chart.vsPrevious}</span>
     </span>
   );
 }
@@ -74,12 +66,19 @@ export function ChartAreaInteractive({
   onDaysChange: (days: number) => void;
   fetching: boolean;
 }) {
+  const { t, f, format, locale } = useI18n();
   const [metric, setMetric] = useState<Metric>("parcels");
+  const chartConfig = {
+    revenue: { label: t.admin.chart.revenue, color: "var(--chart-1)" },
+    parcels: { label: t.admin.chart.booked, color: "var(--chart-1)" },
+    delivered: { label: t.admin.chart.delivered, color: "var(--chart-2)" },
+  } satisfies ChartConfig;
+  const dayLabel = (date: string) => formatDayLabel(date, locale);
   const uid = useId().replace(/:/g, "");
 
   const weekly = period.days > 90;
   const data = weekly ? toWeekly(period.timeline) : period.timeline;
-  const range = TIME_RANGES.find((r) => r.days === period.days);
+  const rangeLabel = t.admin.chart.ranges[String(period.days)];
   const deliveryRate =
     period.parcels > 0 ? Math.round((period.delivered / period.parcels) * 100) : null;
   const hasData = data.some((p) => (metric === "revenue" ? p.revenue : p.parcels) > 0);
@@ -94,19 +93,22 @@ export function ChartAreaInteractive({
   }> = [
     {
       key: "parcels",
-      label: "Parcels booked",
-      value: period.parcels.toLocaleString("en"),
+      label: t.admin.chart.parcelsBooked,
+      value: f.number(period.parcels),
       current: period.parcels,
       previous: period.previousParcels,
       note:
         deliveryRate === null
           ? undefined
-          : `${period.delivered.toLocaleString("en")} delivered · ${deliveryRate}%`,
+          : format(t.admin.chart.deliveredNote, {
+              delivered: f.number(period.delivered),
+              rate: f.number(deliveryRate),
+            }),
     },
     {
       key: "revenue",
-      label: "Revenue",
-      value: formatCurrency(period.revenue),
+      label: t.admin.chart.revenue,
+      value: f.currency(period.revenue),
       current: period.revenue,
       previous: period.previousRevenue,
     },
@@ -116,17 +118,20 @@ export function ChartAreaInteractive({
     <Card className="gap-0 py-0">
       <CardHeader className="flex flex-col gap-3 border-b py-5 sm:flex-row sm:items-center">
         <div className="grid flex-1 gap-1">
-          <CardTitle>Shipments and revenue</CardTitle>
+          <CardTitle>{t.admin.chart.title}</CardTitle>
           <CardDescription>
-            {range?.label ?? `Last ${period.days} days`}
-            {weekly ? ", by week" : ", by day"}
+            {rangeLabel ?? format(t.admin.chart.lastDays, { days: f.number(period.days) })}
+            {weekly ? t.admin.chart.byWeek : t.admin.chart.byDay}
           </CardDescription>
         </div>
         <AppSelect
-          ariaLabel="Time range"
+          ariaLabel={t.admin.chart.timeRange}
           value={String(period.days)}
           onValueChange={(value) => onDaysChange(Number(value))}
-          options={TIME_RANGES.map((r) => ({ value: String(r.days), label: r.label }))}
+          options={TIME_RANGES.map((r) => ({
+            value: String(r.days),
+            label: t.admin.chart.ranges[String(r.days)],
+          }))}
           className="rounded-lg"
           containerClassName="w-full sm:ml-auto sm:w-auto"
         />
@@ -183,14 +188,14 @@ export function ChartAreaInteractive({
                 axisLine={false}
                 tickMargin={8}
                 minTickGap={32}
-                tickFormatter={formatDayLabel}
+                tickFormatter={dayLabel}
               />
               <YAxis
                 tickLine={false}
                 axisLine={false}
                 width={metric === "revenue" ? 44 : 28}
                 allowDecimals={false}
-                tickFormatter={formatCompact}
+                tickFormatter={(value: number) => f.compact(value)}
               />
               <ChartTooltip
                 cursor={false}
@@ -198,15 +203,17 @@ export function ChartAreaInteractive({
                   <ChartTooltipContent
                     indicator="dot"
                     labelFormatter={(label) =>
-                      `${weekly ? "Week of " : ""}${formatDayLabel(String(label))}`
+                      weekly
+                        ? format(t.admin.chart.weekOf, { date: dayLabel(String(label)) })
+                        : dayLabel(String(label))
                     }
                     formatter={
                       metric === "revenue"
                         ? (value) => (
                             <div className="flex w-full items-center justify-between gap-4">
-                              <span className="text-muted-foreground">Revenue</span>
+                              <span className="text-muted-foreground">{t.admin.chart.revenue}</span>
                               <span className="font-mono font-medium tabular-nums">
-                                {formatCurrency(Number(value))}
+                                {f.currency(Number(value))}
                               </span>
                             </div>
                           )
@@ -249,12 +256,8 @@ export function ChartAreaInteractive({
           <div className="flex h-[280px] items-center justify-center">
             <EmptyState
               icon={BarChart3}
-              title={
-                metric === "revenue"
-                  ? "No payments in this period"
-                  : "No parcels booked in this period"
-              }
-              description="Try a longer time range, or check back once customers book and pay."
+              title={metric === "revenue" ? t.admin.chart.emptyRevenue : t.admin.chart.emptyParcels}
+              description={t.admin.chart.emptyDescription}
             />
           </div>
         )}

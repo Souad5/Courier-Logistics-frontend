@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { ParcelFilters } from "@/components/modules/parcels/ParcelFilters";
 import { ProofOfDeliveryDialog } from "@/components/modules/parcels/ProofOfDeliveryDialog";
-import { StatusQuickFilters } from "@/components/modules/parcels/StatusQuickFilters";
+import {
+  type QuickFilter,
+  StatusQuickFilters,
+} from "@/components/modules/parcels/StatusQuickFilters";
 import { StatusUpdateDialog } from "@/components/modules/parcels/StatusUpdateDialog";
 import { AppButton } from "@/components/shared/AppButton";
 import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
@@ -11,16 +14,9 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { usePagination } from "@/hooks/usePagination";
 import { useMyParcels } from "@/hooks/useParcels";
+import { useI18n } from "@/i18n/client";
 import { getErrorMessage } from "@/lib/api-client";
-import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Parcel } from "@/types";
-
-const QUICK_FILTERS = [
-  { label: "All assigned" },
-  { label: "Out for delivery", status: "OUT_FOR_DELIVERY" as const },
-  { label: "Delivery failed", status: "DELIVERY_FAILED" as const },
-  { label: "Delivered", status: "DELIVERED" as const },
-];
 
 /**
  * Courier view: parcels assigned to me with status update actions.
@@ -28,6 +24,15 @@ const QUICK_FILTERS = [
  * Must render inside <Suspense>.
  */
 export function CourierTasksTable() {
+  const { t, f } = useI18n();
+  const columnLabels = t.parcels.columns;
+  const quick = t.courier.tasks.quickFilters;
+  const quickFilters: QuickFilter[] = [
+    { label: quick.all },
+    { label: quick.outForDelivery, status: "OUT_FOR_DELIVERY" },
+    { label: quick.deliveryFailed, status: "DELIVERY_FAILED" },
+    { label: quick.delivered, status: "DELIVERED" },
+  ];
   const pagination = usePagination();
   const { query, setPage, setLimit } = pagination;
   const [updateStatusParcel, setUpdateStatusParcel] = useState<Parcel | null>(null);
@@ -38,41 +43,42 @@ export function CourierTasksTable() {
   const columns: DataTableColumn<Parcel>[] = [
     {
       key: "tracking",
-      header: "Tracking #",
+      header: columnLabels.tracking,
       cell: (p) => <span className="font-mono text-sm">{p.trackingNumber}</span>,
     },
-    { key: "sender", header: "Sender", cell: (p) => p.sender?.name ?? "—" },
-    { key: "receiver", header: "Receiver", cell: (p) => p.receiverName },
+    { key: "sender", header: columnLabels.sender, cell: (p) => p.sender?.name ?? "—" },
+    { key: "receiver", header: columnLabels.receiver, cell: (p) => p.receiverName },
     {
       key: "route",
-      header: "Route",
+      header: columnLabels.route,
+      className: "min-w-40 max-w-56 whitespace-normal",
       cell: (p) => (
         <span className="text-muted-foreground text-sm">
           {p.originHub?.name ?? "—"} → {p.destinationHub?.name ?? "—"}
         </span>
       ),
     },
-    { key: "status", header: "Status", cell: (p) => <StatusBadge status={p.status} /> },
-    { key: "created", header: "Booked", cell: (p) => formatDate(p.createdAt) },
+    { key: "status", header: columnLabels.status, cell: (p) => <StatusBadge status={p.status} /> },
+    { key: "created", header: columnLabels.booked, cell: (p) => f.date(p.createdAt) },
     {
       key: "fee",
-      header: "Delivery fee",
+      header: columnLabels.deliveryFee,
       align: "right",
-      cell: (p) => <span className="tabular-nums">{formatCurrency(p.fee, p.currency)}</span>,
+      cell: (p) => <span className="tabular-nums">{f.currency(p.fee, p.currency)}</span>,
     },
     {
       key: "actions",
-      header: "Actions",
+      header: columnLabels.actions,
       align: "right",
       cell: (p) => (
-        <div className="flex items-center justify-end gap-1">
+        <div className="flex flex-col items-end gap-0.5">
           {(p.status === "OUT_FOR_DELIVERY" || p.status === "DELIVERED") && (
             <AppButton variant="link" size="sm" onClick={() => setProofParcel(p)}>
-              Proof photo
+              {t.parcels.actions.proofPhoto}
             </AppButton>
           )}
           <AppButton variant="link" size="sm" onClick={() => setUpdateStatusParcel(p)}>
-            Update status
+            {t.parcels.actions.updateStatus}
           </AppButton>
         </div>
       ),
@@ -83,7 +89,7 @@ export function CourierTasksTable() {
 
   return (
     <>
-      <StatusQuickFilters pagination={pagination} items={QUICK_FILTERS} />
+      <StatusQuickFilters pagination={pagination} items={quickFilters} />
       <DataTable
         columns={columns}
         data={data?.data.parcels}
@@ -92,8 +98,8 @@ export function CourierTasksTable() {
         meta={data?.meta}
         onPageChange={setPage}
         onLimitChange={setLimit}
-        emptyMessage="No tasks assigned to you yet."
-        emptyDescription="Parcels an admin assigns to you will show up here."
+        emptyMessage={t.courier.tasks.empty}
+        emptyDescription={t.courier.tasks.emptyDescription}
         toolbar={<ParcelFilters pagination={pagination} />}
       />
       {proofParcel && (

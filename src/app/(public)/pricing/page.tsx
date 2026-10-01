@@ -7,70 +7,73 @@ import { FadeIn } from "@/components/shared/FadeIn";
 import { PhotoCta } from "@/components/shared/PhotoCta";
 import { PublicPageHeader, SectionHeading } from "@/components/shared/SectionHeading";
 import { estimateFee, FAQS, PRICING } from "@/config/content";
+import { getI18n } from "@/i18n/server";
 import { pageMetadata } from "@/lib/seo";
-import { formatCurrency } from "@/lib/utils";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Pricing",
-  description:
-    "Transparent courier pricing: a flat base fee, a per-kg weight rate and zone surcharges. See exactly what your parcel costs before you pay.",
-  path: "/pricing",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return pageMetadata({
+    title: t.publicPages.pricing.meta.title,
+    description: t.publicPages.pricing.meta.description,
+    path: "/pricing",
+  });
+}
 
+// Text: `publicPages.pricing.parts[key]`.
 const PARTS = [
-  {
-    icon: Package,
-    label: "Base fee",
-    value: formatCurrency(PRICING.baseFee),
-    note: "Charged once on every parcel.",
-  },
-  {
-    icon: Scale,
-    label: "Weight",
-    value: `${formatCurrency(PRICING.perKg)} / kg`,
-    note: "Billed on the actual weight you enter.",
-  },
-  {
-    icon: Warehouse,
-    label: "Zones",
-    value: "Per hub",
-    note: "Added for both the pickup and the delivery hub.",
-  },
-];
+  { key: "base", icon: Package },
+  { key: "weight", icon: Scale },
+  { key: "zones", icon: Warehouse },
+] as const;
 
 const EXAMPLE = { weightKg: 2.5, origin: PRICING.zones[0], destination: PRICING.zones[4] };
 const FROM_ZONE = PRICING.zones[0];
 const CHARGE_WEIGHTS = [0.5, 1, 2, 5];
-const PRICING_FAQS = FAQS.filter((f) => /fee|pay/i.test(f.q));
+const PRICING_FAQS = FAQS.filter((faq) => faq.pricing);
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const { t, f, format } = await getI18n();
+  const p = t.publicPages.pricing;
   const example = estimateFee(EXAMPLE.weightKg, EXAMPLE.origin.code, EXAMPLE.destination.code);
+  const zoneName = (zone: { code: string; label: string }) => t.enums.zone[zone.code] ?? zone.label;
+  const partValue = {
+    base: f.currency(PRICING.baseFee),
+    weight: format(p.parts.weight.value, { amount: f.currency(PRICING.perKg) }),
+    zones: p.parts.zones.value,
+  };
+  const faqVars = {
+    currency: PRICING.currency,
+    baseFee: f.number(PRICING.baseFee),
+    perKg: f.number(PRICING.perKg),
+  };
 
   return (
     <>
       <PublicPageHeader
         image={boxesImg}
         imagePosition="50% 60%"
-        eyebrow="Pricing"
-        title="Simple, transparent pricing."
-        description="Every fee comes from three things: a flat base fee, the parcel's weight, and the zones of the pickup and delivery hubs. You see the total before you pay."
+        eyebrow={p.header.eyebrow}
+        title={p.header.title}
+        description={p.header.description}
       />
 
       {/* Formula cards overlapping the header */}
       <div className="relative z-10 container mx-auto -mt-16 px-4">
         <div className="grid gap-4 md:grid-cols-3">
           {PARTS.map((part, index) => (
-            <FadeIn key={part.label} delay={0.2 + index * 0.08}>
+            <FadeIn key={part.key} delay={0.2 + index * 0.08}>
               <div className="bg-card h-full space-y-3 rounded-2xl p-6 shadow-xl shadow-black/10">
                 <div className="flex items-center justify-between">
                   <p className="eyebrow">
                     {index > 0 && <span aria-hidden>+ </span>}
-                    {part.label}
+                    {p.parts[part.key].label}
                   </p>
                   <part.icon className="text-muted-foreground size-5" aria-hidden />
                 </div>
-                <p className="text-3xl font-semibold tracking-tight tabular-nums">{part.value}</p>
-                <p className="text-muted-foreground text-sm">{part.note}</p>
+                <p className="text-3xl font-semibold tracking-tight tabular-nums">
+                  {partValue[part.key]}
+                </p>
+                <p className="text-muted-foreground text-sm">{p.parts[part.key].note}</p>
               </div>
             </FadeIn>
           ))}
@@ -86,11 +89,8 @@ export default function PricingPage() {
                 <Calculator className="size-5" aria-hidden />
               </span>
               <div className="space-y-1">
-                <h2 className="text-2xl font-semibold tracking-tight">Delivery calculator</h2>
-                <p className="text-muted-foreground text-sm">
-                  Pick real hubs from our network and a weight — this is the fee you&apos;ll be
-                  charged.
-                </p>
+                <h2 className="text-2xl font-semibold tracking-tight">{p.calculator.title}</h2>
+                <p className="text-muted-foreground text-sm">{p.calculator.description}</p>
               </div>
             </div>
             <FeeCalculator />
@@ -101,26 +101,27 @@ export default function PricingPage() {
       {/* Charges table + worked example */}
       <section className="bg-muted/40 border-y">
         <div className="container mx-auto grid gap-12 px-4 py-20 md:py-24 lg:grid-cols-[1.3fr_0.7fr]">
-          <FadeIn className="space-y-5">
+          {/* min-w-0: let the table scroll inside its card instead of widening the grid column. */}
+          <FadeIn className="min-w-0 space-y-5">
             <SectionHeading
-              eyebrow="Delivery charges"
-              title="Common prices at a glance."
-              description={`Sending from an ${FROM_ZONE.label.toLowerCase()} hub. Surcharges for each zone are shown in the last column.`}
+              eyebrow={p.table.eyebrow}
+              title={p.table.title}
+              description={format(p.table.description, { zone: zoneName(FROM_ZONE).toLowerCase() })}
             />
             <div className="bg-card overflow-x-auto rounded-2xl shadow-sm ring-1 ring-black/5 dark:ring-white/10">
               <table className="w-full text-sm">
                 <thead className="bg-muted/50">
                   <tr>
                     <th scope="col" className="px-4 py-3 text-left font-medium">
-                      Delivery zone
+                      {p.table.deliveryZone}
                     </th>
                     {CHARGE_WEIGHTS.map((w) => (
                       <th key={w} scope="col" className="px-4 py-3 text-right font-medium">
-                        {w} kg
+                        {format(p.table.weight, { kg: f.number(w) })}
                       </th>
                     ))}
                     <th scope="col" className="px-4 py-3 text-right font-medium">
-                      Zone surcharge
+                      {p.table.zoneSurcharge}
                     </th>
                   </tr>
                 </thead>
@@ -128,15 +129,15 @@ export default function PricingPage() {
                   {PRICING.zones.map((zone) => (
                     <tr key={zone.code} className="hover:bg-muted/40 transition-colors">
                       <th scope="row" className="px-4 py-3 text-left font-normal">
-                        {zone.label}
+                        {zoneName(zone)}
                       </th>
                       {CHARGE_WEIGHTS.map((w) => (
                         <td key={w} className="px-4 py-3 text-right tabular-nums">
-                          {formatCurrency(estimateFee(w, FROM_ZONE.code, zone.code).total)}
+                          {f.currency(estimateFee(w, FROM_ZONE.code, zone.code).total)}
                         </td>
                       ))}
                       <td className="text-muted-foreground px-4 py-3 text-right tabular-nums">
-                        {zone.surcharge === 0 ? "—" : `+${formatCurrency(zone.surcharge)}`}
+                        {zone.surcharge === 0 ? "—" : `+${f.currency(zone.surcharge)}`}
                       </td>
                     </tr>
                   ))}
@@ -145,11 +146,11 @@ export default function PricingPage() {
                       scope="row"
                       className="text-muted-foreground px-4 py-3 text-left font-normal"
                     >
-                      Any other zone
+                      {p.table.otherZone}
                     </th>
                     <td colSpan={CHARGE_WEIGHTS.length} />
                     <td className="text-muted-foreground px-4 py-3 text-right tabular-nums">
-                      +{formatCurrency(PRICING.defaultZoneSurcharge)}
+                      +{f.currency(PRICING.defaultZoneSurcharge)}
                     </td>
                   </tr>
                 </tbody>
@@ -157,33 +158,40 @@ export default function PricingPage() {
             </div>
           </FadeIn>
 
-          <FadeIn delay={0.1} className="space-y-5">
-            <h2 className="text-xl font-semibold tracking-tight">Worked example</h2>
+          <FadeIn delay={0.1} className="min-w-0 space-y-5">
+            <h2 className="text-xl font-semibold tracking-tight">{p.example.title}</h2>
             <div className="bg-card overflow-hidden rounded-2xl shadow-sm ring-1 ring-black/5 dark:ring-white/10">
               <p className="text-muted-foreground border-b border-dashed px-5 py-4 text-sm">
-                A {EXAMPLE.weightKg} kg parcel from an {EXAMPLE.origin.label.toLowerCase()} hub to
-                an {EXAMPLE.destination.label.toLowerCase()} hub.
+                {format(p.example.description, {
+                  kg: f.number(EXAMPLE.weightKg),
+                  from: zoneName(EXAMPLE.origin).toLowerCase(),
+                  to: zoneName(EXAMPLE.destination).toLowerCase(),
+                })}
               </p>
               <div className="space-y-2.5 px-5 py-4 font-mono text-sm">
-                <Row label="Base fee" value={example.baseFee} />
+                <Row label={p.example.baseFee} value={f.currency(example.baseFee)} />
                 <Row
-                  label={`Weight ${EXAMPLE.weightKg} kg × ${PRICING.perKg}`}
-                  value={example.weightFee}
+                  label={format(p.example.weight, {
+                    kg: f.number(EXAMPLE.weightKg),
+                    rate: f.number(PRICING.perKg),
+                  })}
+                  value={f.currency(example.weightFee)}
                 />
-                <Row label={`Origin · ${EXAMPLE.origin.label}`} value={EXAMPLE.origin.surcharge} />
                 <Row
-                  label={`Destination · ${EXAMPLE.destination.label}`}
-                  value={EXAMPLE.destination.surcharge}
+                  label={format(p.example.origin, { zone: zoneName(EXAMPLE.origin) })}
+                  value={f.currency(EXAMPLE.origin.surcharge)}
+                />
+                <Row
+                  label={format(p.example.destination, { zone: zoneName(EXAMPLE.destination) })}
+                  value={f.currency(EXAMPLE.destination.surcharge)}
                 />
               </div>
               <div className="bg-muted/40 flex justify-between border-t border-dashed px-5 py-4 font-mono font-semibold">
-                <span>Total</span>
-                <span className="tabular-nums">{formatCurrency(example.total)}</span>
+                <span>{p.example.total}</span>
+                <span className="tabular-nums">{f.currency(example.total)}</span>
               </div>
             </div>
-            <p className="text-muted-foreground text-sm">
-              The server always calculates the final fee with the same rule — this page mirrors it.
-            </p>
+            <p className="text-muted-foreground text-sm">{p.example.note}</p>
           </FadeIn>
         </div>
       </section>
@@ -191,39 +199,44 @@ export default function PricingPage() {
       {/* Pricing FAQ */}
       <section className="container mx-auto grid gap-12 px-4 py-20 md:py-24 lg:grid-cols-[0.8fr_1.2fr]">
         <FadeIn>
-          <SectionHeading eyebrow="FAQ" title="Pricing questions." />
+          <SectionHeading eyebrow={p.faq.eyebrow} title={p.faq.title} />
         </FadeIn>
         <div className="divide-y border-y">
-          {PRICING_FAQS.map((item) => (
-            <details key={item.q} className="group py-5">
-              <summary className="focus-visible:ring-ring flex cursor-pointer list-none items-center justify-between gap-4 rounded font-medium focus-visible:ring-2 focus-visible:outline-none [&::-webkit-details-marker]:hidden">
-                {item.q}
-                <ChevronDown
-                  className="text-muted-foreground size-4 shrink-0 transition-transform group-open:rotate-180"
-                  aria-hidden
-                />
-              </summary>
-              <p className="text-muted-foreground mt-3 max-w-prose text-sm text-pretty">{item.a}</p>
-            </details>
-          ))}
+          {PRICING_FAQS.map(({ key }) => {
+            const item = t.landing.content.faqs[key];
+            return (
+              <details key={key} className="group py-5">
+                <summary className="focus-visible:ring-ring flex cursor-pointer list-none items-center justify-between gap-4 rounded font-medium focus-visible:ring-2 focus-visible:outline-none [&::-webkit-details-marker]:hidden">
+                  {item.q}
+                  <ChevronDown
+                    className="text-muted-foreground size-4 shrink-0 transition-transform group-open:rotate-180"
+                    aria-hidden
+                  />
+                </summary>
+                <p className="text-muted-foreground mt-3 max-w-prose text-sm text-pretty">
+                  {format(item.a, faqVars)}
+                </p>
+              </details>
+            );
+          })}
         </div>
       </section>
 
       <PhotoCta
-        title="Know the price? Book it now."
-        description="Create a free account and the fee you just saw is the fee you pay."
-        primary={{ label: "Send a parcel", href: "/register" }}
-        secondary={{ label: "Explore services", href: "/services" }}
+        title={p.cta.title}
+        description={p.cta.description}
+        primary={{ label: p.cta.primary, href: "/register" }}
+        secondary={{ label: p.cta.secondary, href: "/services" }}
       />
     </>
   );
 }
 
-function Row({ label, value }: { label: string; value: number }) {
+function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4">
       <span className="text-muted-foreground">{label}</span>
-      <span className="tabular-nums">{formatCurrency(value)}</span>
+      <span className="tabular-nums">{value}</span>
     </div>
   );
 }

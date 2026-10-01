@@ -1,0 +1,42 @@
+import type { hubs as en } from "../en/hubs";
+
+export const hubs: typeof en = {
+  columns: {
+    name: "হাবের নাম",
+    code: "কোড",
+    zone: "জোন",
+    city: "শহর",
+    created: "তৈরির তারিখ",
+    actions: "কার্যক্রম",
+  },
+  edit: "সম্পাদনা",
+  delete: "মুছুন",
+  create: "হাব তৈরি করুন",
+  empty: "কোনো হাব পাওয়া যায়নি।",
+  emptyDescription: "খোঁজ বা জোনের ফিল্টার পরিবর্তন করুন, অথবা নতুন হাব তৈরি করুন।",
+  search: "নাম, জোন বা শহর দিয়ে খুঁজুন…",
+  searchLabel: "হাব খুঁজুন",
+  zoneFilter: "জোন অনুযায়ী ফিল্টার",
+  allZones: "সব জোন",
+  deleteTitle: "হাব মুছুন",
+  deleteDescription: 'আপনি কি নিশ্চিতভাবে "{name}" মুছে ফেলতে চান? এটি আর ফিরিয়ে আনা যাবে না।',
+  form: {
+    editTitle: "হাব সম্পাদনা",
+    createTitle: "হাব তৈরি করুন",
+    update: "আপডেট",
+    create: "তৈরি করুন",
+    name: "হাবের নাম",
+    code: "হাব কোড",
+    zoneCode: "জোন কোড",
+    zoneName: "জোনের নাম",
+    address: "ঠিকানা",
+    city: "শহর",
+    latitude: "অক্ষাংশ",
+    longitude: "দ্রাঘিমাংশ",
+    codeFormat: "শুধু অক্ষর, সংখ্যা, ড্যাশ ও আন্ডারস্কোর ব্যবহার করা যাবে",
+  },
+  select: {
+    placeholder: "একটি হাব বেছে নিন",
+    loading: "হাব লোড হচ্ছে…",
+  },
+};

@@ -9,13 +9,14 @@ import { AppButton } from "@/components/shared/AppButton";
 import { AppInput } from "@/components/shared/form";
 import { estimateFee } from "@/config/content";
 import { useHubs } from "@/hooks/useHubs";
-import { formatCurrency } from "@/lib/utils";
+import { useI18n } from "@/i18n/client";
 import { useAuthStore } from "@/store/auth.store";
 
 const MAX_WEIGHT_KG = 1000; // parcel.validation.ts
 
 /** Delivery calculator: weight + pickup hub + delivery hub → the same formula the backend charges. */
 export function FeeCalculator() {
+  const { t, f, format } = useI18n();
   const [weight, setWeight] = useState("1");
   const [originId, setOriginId] = useState("");
   const [destinationId, setDestinationId] = useState("");
@@ -39,39 +40,48 @@ export function FeeCalculator() {
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
       <div className="grid gap-4 sm:grid-cols-3">
         <AppInput
-          label="Weight (kg)"
+          label={t.landing.calculator.weight}
           type="number"
           inputMode="decimal"
-          min={0.1}
+          min={0}
           max={MAX_WEIGHT_KG}
           step={0.1}
           value={weight}
           onChange={(event) => setWeight(event.target.value)}
-          error={weight && !validWeight ? `Enter 0.1–${MAX_WEIGHT_KG} kg` : undefined}
+          error={
+            weight && !validWeight
+              ? format(t.landing.calculator.weightError, { max: f.number(MAX_WEIGHT_KG) })
+              : undefined
+          }
         />
-        <HubSelect label="Pickup hub" value={originId} onChange={setOriginId} />
-        <HubSelect label="Delivery hub" value={destinationId} onChange={setDestinationId} />
+        <HubSelect label={t.landing.calculator.pickupHub} value={originId} onChange={setOriginId} />
+        <HubSelect
+          label={t.landing.calculator.deliveryHub}
+          value={destinationId}
+          onChange={setDestinationId}
+        />
       </div>
 
       <div className="bg-muted/50 flex flex-col justify-between gap-4 rounded-xl p-4">
         {fee ? (
           <dl className="space-y-1.5 text-sm">
-            <Row label="Base fee" value={formatCurrency(fee.baseFee)} />
-            <Row label="Weight charge" value={formatCurrency(fee.weightFee)} />
-            <Row label="Zone surcharges" value={formatCurrency(fee.zoneSurcharge)} />
+            <Row label={t.landing.calculator.baseFee} value={f.currency(fee.baseFee)} />
+            <Row label={t.landing.calculator.weightCharge} value={f.currency(fee.weightFee)} />
+            <Row
+              label={t.landing.calculator.zoneSurcharges}
+              value={f.currency(fee.zoneSurcharge)}
+            />
             <div className="flex items-baseline justify-between border-t pt-2">
-              <dt className="font-medium">Estimated fee</dt>
-              <dd className="text-2xl font-semibold tabular-nums">{formatCurrency(fee.total)}</dd>
+              <dt className="font-medium">{t.landing.calculator.estimatedFee}</dt>
+              <dd className="text-2xl font-semibold tabular-nums">{f.currency(fee.total)}</dd>
             </div>
           </dl>
         ) : (
-          <p className="text-muted-foreground text-sm">
-            Pick a pickup and delivery hub to see the fee before you book.
-          </p>
+          <p className="text-muted-foreground text-sm">{t.landing.calculator.hint}</p>
         )}
         <AppButton asChild className="group w-full">
           <Link href={bookHref}>
-            Book this parcel
+            {t.landing.calculator.book}
             <ArrowRight className="transition-transform group-hover:translate-x-0.5" />
           </Link>
         </AppButton>

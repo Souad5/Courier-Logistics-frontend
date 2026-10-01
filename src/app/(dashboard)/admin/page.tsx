@@ -3,8 +3,12 @@ import { Suspense } from "react";
 
 import { AdminOverview } from "@/components/modules/admin/AdminOverview";
 import { OverviewSkeleton } from "@/components/modules/admin/overview/OverviewSkeleton";
+import { getI18n } from "@/i18n/server";
 
-export const metadata: Metadata = { title: "Admin overview" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return { title: t.admin.pages.overviewTitle };
+}
 
 export default function AdminOverviewPage() {
   return (

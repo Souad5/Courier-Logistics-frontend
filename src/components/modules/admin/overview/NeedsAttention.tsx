@@ -1,19 +1,24 @@
+"use client";
+
 import { CheckCircle2, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 import { EmptyState } from "@/components/shared/EmptyState";
+import { useI18n } from "@/i18n/client";
 import type { DashboardStats, ParcelStatus } from "@/types";
 
-const ITEMS: Array<{ status: ParcelStatus; label: string; hint: string }> = [
-  { status: "PENDING", label: "Pending", hint: "Booked, waiting for a courier" },
-  { status: "DELIVERY_FAILED", label: "Delivery failed", hint: "Needs another attempt" },
-  { status: "RETURN_TO_SENDER", label: "Returning to sender", hint: "Out of delivery attempts" },
+const ITEMS: Array<{ status: ParcelStatus; key: "pending" | "failed" | "returning" }> = [
+  { status: "PENDING", key: "pending" },
+  { status: "DELIVERY_FAILED", key: "failed" },
+  { status: "RETURN_TO_SENDER", key: "returning" },
 ];
 
 /** Operational queues with deep links into the URL-filtered parcel list. */
 export function NeedsAttention({ breakdown }: { breakdown: DashboardStats["statusBreakdown"] }) {
+  const { t, f } = useI18n();
   const rows = ITEMS.map((item) => ({
     ...item,
+    ...t.admin.needsAttention[item.key],
     count: breakdown.find((b) => b.status === item.status)?.count ?? 0,
   }));
 
@@ -21,8 +26,8 @@ export function NeedsAttention({ breakdown }: { breakdown: DashboardStats["statu
     return (
       <EmptyState
         icon={CheckCircle2}
-        title="Nothing needs attention"
-        description="No parcels are pending, failed or on their way back."
+        title={t.admin.needsAttention.emptyTitle}
+        description={t.admin.needsAttention.emptyDescription}
       />
     );
   }
@@ -42,7 +47,7 @@ export function NeedsAttention({ breakdown }: { breakdown: DashboardStats["statu
                   : "text-muted-foreground w-10 text-2xl font-semibold tabular-nums"
               }
             >
-              {row.count}
+              {f.number(row.count)}
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-sm font-medium">{row.label}</span>

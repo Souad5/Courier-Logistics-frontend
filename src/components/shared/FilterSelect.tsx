@@ -24,7 +24,7 @@ export function FilterSelect({
       value={value || ALL}
       onValueChange={(next) => onChange(next === ALL ? null : next)}
       options={[{ value: ALL, label: allLabel }, ...options]}
-      containerClassName="w-full sm:w-44"
+      containerClassName="w-full sm:w-40"
     />
   );
 }

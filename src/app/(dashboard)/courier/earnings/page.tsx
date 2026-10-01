@@ -4,13 +4,21 @@ import { Suspense } from "react";
 import { CourierEarnings } from "@/components/modules/courier/CourierEarnings";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getI18n } from "@/i18n/server";
 
-export const metadata: Metadata = { title: "Earnings" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return { title: t.courier.pages.earnings.title };
+}
 
-export default function CourierEarningsPage() {
+export default async function CourierEarningsPage() {
+  const { t } = await getI18n();
   return (
     <>
-      <PageHeader title="Earnings" description="What you've earned from completed deliveries." />
+      <PageHeader
+        title={t.courier.pages.earnings.title}
+        description={t.courier.pages.earnings.description}
+      />
       <Suspense fallback={<Skeleton className="h-96 rounded-xl" />}>
         <CourierEarnings />
       </Suspense>

@@ -4,13 +4,14 @@ import { Menu, PanelLeft } from "lucide-react";
 import type { ReactNode } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useI18n } from "@/i18n/client";
 import { authStorage } from "@/lib/auth-storage";
-import { humanize } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
 import { useUIStore } from "@/store/ui.store";
 import type { Role } from "@/types";
 
 import { AppButton } from "./AppButton";
+import { LanguageToggle } from "./LanguageToggle";
 import { Logo } from "./Logo";
 import { Sidebar, SidebarNav, useActiveNavItem } from "./Sidebar";
 import { ThemeToggle } from "./ThemeToggle";
@@ -25,6 +26,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   const user = useAuthStore((s) => s.user);
   const hydrated = useAuthStore((s) => s.hydrated);
   const { sidebarCollapsed, toggleSidebar, mobileSidebarOpen, setMobileSidebarOpen } = useUIStore();
+  const { t } = useI18n();
 
   const role = user?.role ?? (hydrated ? authStorage.getRole() : null);
 
@@ -44,7 +46,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             variant="ghost"
             size="icon"
             className="md:hidden"
-            aria-label="Open navigation"
+            aria-label={t.nav.shell.openNavigation}
             onClick={() => setMobileSidebarOpen(true)}
           >
             <Menu />
@@ -53,13 +55,14 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             variant="ghost"
             size="icon"
             className="hidden md:inline-flex"
-            aria-label="Toggle sidebar"
+            aria-label={t.nav.shell.toggleSidebar}
             onClick={toggleSidebar}
           >
             <PanelLeft />
           </AppButton>
           {role && <Breadcrumb role={role} />}
           <div className="ml-auto flex items-center gap-1">
+            <LanguageToggle />
             <ThemeToggle />
             <UserMenu />
           </div>
@@ -86,15 +89,16 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 
 function Breadcrumb({ role }: { role: Role }) {
   const current = useActiveNavItem(role);
+  const { t } = useI18n();
   return (
     <p className="flex min-w-0 items-center gap-1.5 text-sm">
-      <span className="text-muted-foreground hidden sm:inline">{humanize(role)}</span>
+      <span className="text-muted-foreground hidden sm:inline">{t.enums.role[role]}</span>
       {current && (
         <>
           <span className="text-muted-foreground hidden sm:inline" aria-hidden>
             /
           </span>
-          <span className="truncate font-medium">{current.title}</span>
+          <span className="truncate font-medium">{t.nav.dashboard[current.key]}</span>
         </>
       )}
     </p>

@@ -12,6 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useI18n } from "@/i18n/client";
+import { interpolateNodes } from "@/i18n/rich";
 import { cn } from "@/lib/utils";
 import type { PaginationMeta } from "@/types";
 
@@ -72,15 +74,16 @@ export function DataTable<T>({
   meta,
   onPageChange,
   onLimitChange,
-  emptyMessage = "No records found.",
+  emptyMessage,
   emptyDescription,
   toolbar,
 }: DataTableProps<T>) {
+  const { t } = useI18n();
   const rows = data ?? [];
 
   return (
     <div className="space-y-3">
-      {toolbar && <div className="flex flex-wrap items-center gap-2">{toolbar}</div>}
+      {toolbar}
 
       <div className="overflow-x-auto rounded-lg border">
         <Table>
@@ -118,7 +121,10 @@ export function DataTable<T>({
             ) : rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={columns.length}>
-                  <EmptyState title={emptyMessage} description={emptyDescription} />
+                  <EmptyState
+                    title={emptyMessage ?? t.common.states.noRecords}
+                    description={emptyDescription}
+                  />
                 </TableCell>
               </TableRow>
             ) : (
@@ -167,6 +173,7 @@ function TablePagination({
   onPageChange?: (page: number) => void;
   onLimitChange?: (limit: number) => void;
 }) {
+  const { t, f, format } = useI18n();
   const { page, limit, total, totalPages } = meta;
   const from = (page - 1) * limit + 1;
   const to = Math.min(page * limit, total);
@@ -175,18 +182,24 @@ function TablePagination({
     <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
       <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-2">
         <p aria-live="polite">
-          Showing <span className="text-foreground font-medium tabular-nums">{from}</span>–
-          <span className="text-foreground font-medium tabular-nums">{to}</span> of{" "}
-          <span className="text-foreground font-medium tabular-nums">{total}</span>
+          {interpolateNodes(t.common.table.showing, {
+            from: (
+              <span className="text-foreground font-medium tabular-nums">{f.number(from)}</span>
+            ),
+            to: <span className="text-foreground font-medium tabular-nums">{f.number(to)}</span>,
+            total: (
+              <span className="text-foreground font-medium tabular-nums">{f.number(total)}</span>
+            ),
+          })}
         </p>
         {onLimitChange && (
           <div className="flex items-center gap-2">
-            <span>Rows per page</span>
+            <span>{t.common.table.rowsPerPage}</span>
             <AppSelect
-              ariaLabel="Rows per page"
+              ariaLabel={t.common.table.rowsPerPage}
               value={String(limit)}
               onValueChange={(value) => onLimitChange(Number(value))}
-              options={PAGE_SIZES.map((size) => ({ value: String(size), label: String(size) }))}
+              options={PAGE_SIZES.map((size) => ({ value: String(size), label: f.number(size) }))}
               containerClassName="w-20"
             />
           </div>
@@ -194,15 +207,15 @@ function TablePagination({
       </div>
 
       {totalPages > 1 && (
-        <nav aria-label="Pagination" className="flex items-center gap-1">
+        <nav aria-label={t.common.table.pagination} className="flex items-center gap-1">
           <AppButton
             variant="outline"
             disabled={page <= 1 || loading}
             leftIcon={<ChevronLeft />}
             onClick={() => onPageChange?.(page - 1)}
-            aria-label="Previous page"
+            aria-label={t.common.table.previousPage}
           >
-            <span className="hidden sm:inline">Previous</span>
+            <span className="hidden sm:inline">{t.common.table.previous}</span>
           </AppButton>
           {pageItems(page, totalPages).map((item) =>
             typeof item === "number" ? (
@@ -213,10 +226,10 @@ function TablePagination({
                 className="tabular-nums"
                 disabled={loading && item !== page}
                 aria-current={item === page ? "page" : undefined}
-                aria-label={`Page ${item}`}
+                aria-label={format(t.common.table.page, { page: item })}
                 onClick={() => item !== page && onPageChange?.(item)}
               >
-                {item}
+                {f.number(item)}
               </AppButton>
             ) : (
               <span
@@ -233,9 +246,9 @@ function TablePagination({
             disabled={page >= totalPages || loading}
             rightIcon={<ChevronRight />}
             onClick={() => onPageChange?.(page + 1)}
-            aria-label="Next page"
+            aria-label={t.common.table.nextPage}
           >
-            <span className="hidden sm:inline">Next</span>
+            <span className="hidden sm:inline">{t.common.table.next}</span>
           </AppButton>
         </nav>
       )}

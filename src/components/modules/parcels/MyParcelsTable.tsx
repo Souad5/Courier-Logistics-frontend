@@ -7,8 +7,8 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { usePagination } from "@/hooks/usePagination";
 import { useMyParcels } from "@/hooks/useParcels";
+import { useI18n } from "@/i18n/client";
 import { getErrorMessage } from "@/lib/api-client";
-import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Parcel } from "@/types";
 
 /**
@@ -16,6 +16,7 @@ import type { Parcel } from "@/types";
  * customers, assigned courier for couriers). Must render inside <Suspense>.
  */
 export function MyParcelsTable({ showPayAction = false }: { showPayAction?: boolean }) {
+  const { t, f } = useI18n();
   const pagination = usePagination();
   const { query, setPage, setLimit } = pagination;
 
@@ -24,33 +25,38 @@ export function MyParcelsTable({ showPayAction = false }: { showPayAction?: bool
   const columns: DataTableColumn<Parcel>[] = [
     {
       key: "tracking",
-      header: "Tracking #",
+      header: t.customer.table.tracking,
       cell: (p) => <span className="font-mono text-sm">{p.trackingNumber}</span>,
     },
-    { key: "receiver", header: "Receiver", cell: (p) => p.receiverName },
+    { key: "receiver", header: t.customer.table.receiver, cell: (p) => p.receiverName },
     {
       key: "route",
-      header: "Route",
+      header: t.customer.table.route,
+      className: "min-w-40 max-w-56 whitespace-normal",
       cell: (p) => (
         <span className="text-muted-foreground text-sm">
           {p.originHub?.name ?? "—"} → {p.destinationHub?.name ?? "—"}
         </span>
       ),
     },
-    { key: "status", header: "Status", cell: (p) => <StatusBadge status={p.status} /> },
-    { key: "created", header: "Booked", cell: (p) => formatDate(p.createdAt) },
+    {
+      key: "status",
+      header: t.customer.table.status,
+      cell: (p) => <StatusBadge status={p.status} />,
+    },
+    { key: "created", header: t.customer.table.booked, cell: (p) => f.date(p.createdAt) },
     {
       key: "fee",
-      header: "Fee",
+      header: t.customer.table.fee,
       align: "right",
-      cell: (p) => <span className="tabular-nums">{formatCurrency(p.fee, p.currency)}</span>,
+      cell: (p) => <span className="tabular-nums">{f.currency(p.fee, p.currency)}</span>,
     },
   ];
 
   if (showPayAction) {
     columns.push({
       key: "actions",
-      header: "Actions",
+      header: t.customer.table.actions,
       align: "right",
       cell: (p) =>
         p.status === "PENDING" && p.payment?.status !== "PAID" ? (
@@ -70,9 +76,9 @@ export function MyParcelsTable({ showPayAction = false }: { showPayAction?: bool
       meta={data?.meta}
       onPageChange={setPage}
       onLimitChange={setLimit}
-      emptyMessage="No parcels yet."
+      emptyMessage={t.customer.table.empty}
       toolbar={<ParcelFilters pagination={pagination} />}
-      emptyDescription="Try changing the search or status filter, or book a new parcel."
+      emptyDescription={t.customer.table.emptyDescription}
     />
   );
 }

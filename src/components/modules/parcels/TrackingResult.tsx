@@ -7,12 +7,13 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTrackParcel } from "@/hooks/useParcels";
+import { useI18n } from "@/i18n/client";
 import { getErrorMessage } from "@/lib/api-client";
-import { formatDate, humanize } from "@/lib/utils";
 
 import { ParcelStatusTimeline } from "./ParcelStatusTimeline";
 
 export function TrackingResult({ trackingNumber }: { trackingNumber: string }) {
+  const { t, f, format } = useI18n();
   const { data: parcel, isLoading, error } = useTrackParcel(trackingNumber);
 
   if (isLoading) return <Skeleton className="h-80 rounded-xl" />;
@@ -22,7 +23,7 @@ export function TrackingResult({ trackingNumber }: { trackingNumber: string }) {
       <Card>
         <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
           <PackageSearch className="text-muted-foreground size-8" />
-          <p className="font-medium">We couldn&apos;t find that parcel</p>
+          <p className="font-medium">{t.tracking.result.notFound}</p>
           <p className="text-muted-foreground text-sm">{getErrorMessage(error)}</p>
         </CardContent>
       </Card>
@@ -37,32 +38,36 @@ export function TrackingResult({ trackingNumber }: { trackingNumber: string }) {
           <StatusBadge status={parcel.status} />
         </div>
         <CardDescription>
-          {humanize(parcel.type)} · {parcel.senderCity ?? "Origin"} →{" "}
-          {parcel.receiverCity ?? "Destination"} · for {parcel.receiverName}
+          {format(t.tracking.result.summary, {
+            type: t.enums.parcelType[parcel.type],
+            from: parcel.senderCity ?? t.tracking.result.origin,
+            to: parcel.receiverCity ?? t.tracking.result.destination,
+            receiver: parcel.receiverName,
+          })}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <dl className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
           <div>
-            <dt className="text-muted-foreground">Booked</dt>
-            <dd>{formatDate(parcel.createdAt)}</dd>
+            <dt className="text-muted-foreground">{t.tracking.result.booked}</dt>
+            <dd>{f.date(parcel.createdAt)}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">Delivered</dt>
-            <dd>{formatDate(parcel.deliveredAt)}</dd>
+            <dt className="text-muted-foreground">{t.tracking.result.delivered}</dt>
+            <dd>{f.date(parcel.deliveredAt)}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">Delivery attempts</dt>
-            <dd>{parcel.deliveryAttempts}</dd>
+            <dt className="text-muted-foreground">{t.tracking.result.attempts}</dt>
+            <dd>{f.number(parcel.deliveryAttempts)}</dd>
           </div>
         </dl>
 
         {parcel.proofOfDeliveryUrl && (
           <div className="space-y-2">
-            <p className="text-sm font-medium">Proof of delivery</p>
+            <p className="text-sm font-medium">{t.tracking.result.proof}</p>
             <Image
               src={parcel.proofOfDeliveryUrl}
-              alt="Proof of delivery"
+              alt={t.tracking.result.proof}
               width={640}
               height={480}
               className="max-h-72 w-auto rounded-lg border object-cover"
@@ -71,7 +76,7 @@ export function TrackingResult({ trackingNumber }: { trackingNumber: string }) {
         )}
 
         <div className="space-y-3">
-          <p className="text-sm font-medium">History</p>
+          <p className="text-sm font-medium">{t.tracking.result.history}</p>
           <ParcelStatusTimeline history={parcel.history} />
         </div>
       </CardContent>

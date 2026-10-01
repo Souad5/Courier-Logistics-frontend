@@ -10,8 +10,8 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { usePagination } from "@/hooks/usePagination";
 import { useParcels } from "@/hooks/useParcels";
+import { useI18n } from "@/i18n/client";
 import { getErrorMessage } from "@/lib/api-client";
-import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Parcel } from "@/types";
 
 /**
@@ -19,6 +19,8 @@ import type { Parcel } from "@/types";
  * Must render inside <Suspense>.
  */
 export function AllParcelsTable() {
+  const { t, f } = useI18n();
+  const columnLabels = t.parcels.columns;
   const pagination = usePagination();
   const { query, setPage, setLimit } = pagination;
 
@@ -29,37 +31,38 @@ export function AllParcelsTable() {
   const columns: DataTableColumn<Parcel>[] = [
     {
       key: "tracking",
-      header: "Tracking #",
+      header: columnLabels.tracking,
       cell: (p) => <span className="font-mono text-sm">{p.trackingNumber}</span>,
     },
-    { key: "sender", header: "Sender", cell: (p) => p.sender?.name ?? "—" },
-    { key: "receiver", header: "Receiver", cell: (p) => p.receiverName },
+    { key: "sender", header: columnLabels.sender, cell: (p) => p.sender?.name ?? "—" },
+    { key: "receiver", header: columnLabels.receiver, cell: (p) => p.receiverName },
     {
       key: "courier",
-      header: "Courier",
-      cell: (p) => p.courier?.name ?? <span className="text-muted-foreground">Unassigned</span>,
+      header: columnLabels.courier,
+      cell: (p) =>
+        p.courier?.name ?? <span className="text-muted-foreground">{t.parcels.unassigned}</span>,
     },
-    { key: "status", header: "Status", cell: (p) => <StatusBadge status={p.status} /> },
-    { key: "created", header: "Booked", cell: (p) => formatDate(p.createdAt) },
+    { key: "status", header: columnLabels.status, cell: (p) => <StatusBadge status={p.status} /> },
+    { key: "created", header: columnLabels.booked, cell: (p) => f.date(p.createdAt) },
     {
       key: "fee",
-      header: "Fee",
+      header: columnLabels.fee,
       align: "right",
-      cell: (p) => <span className="tabular-nums">{formatCurrency(p.fee, p.currency)}</span>,
+      cell: (p) => <span className="tabular-nums">{f.currency(p.fee, p.currency)}</span>,
     },
     {
       key: "actions",
-      header: "Actions",
+      header: columnLabels.actions,
       align: "right",
       cell: (p) => (
         <div className="flex items-center justify-end gap-2">
           {!p.courierId && (
             <AppButton variant="link" size="sm" onClick={() => setSelectedParcel(p)}>
-              Assign
+              {t.parcels.actions.assign}
             </AppButton>
           )}
           <AppButton variant="link" size="sm" onClick={() => setUpdateStatusParcel(p)}>
-            Update
+            {t.parcels.actions.update}
           </AppButton>
         </div>
       ),
@@ -78,9 +81,9 @@ export function AllParcelsTable() {
         meta={data?.meta}
         onPageChange={setPage}
         onLimitChange={setLimit}
-        emptyMessage="No parcels yet."
+        emptyMessage={t.parcels.allTable.empty}
         toolbar={<ParcelFilters pagination={pagination} admin />}
-        emptyDescription="Try changing the search or status filter."
+        emptyDescription={t.parcels.allTable.emptyDescription}
       />
       {selectedParcel && (
         <AssignParcelDialog parcel={selectedParcel} onClose={() => setSelectedParcel(null)} />

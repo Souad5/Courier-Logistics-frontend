@@ -10,13 +10,18 @@ import {
 } from "framer-motion";
 import { useEffect, useRef } from "react";
 
+import { useI18n } from "@/i18n/client";
+
 /** Counts from 0 to `value` once it scrolls into view; shows the final number under reduced motion. */
 export function CountUp({ value, duration = 1.2 }: { value: number; duration?: number }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
   const reduceMotion = useReducedMotion();
-  const count = useMotionValue(reduceMotion ? value : 0);
-  const text = useTransform(count, (v) => Math.round(v).toLocaleString("en"));
+  // Always 0 initially: the server can't know the motion preference, so seeding from it
+  // renders different text on the client and breaks hydration.
+  const count = useMotionValue(0);
+  const { f } = useI18n();
+  const text = useTransform(count, (v) => f.number(Math.round(v)));
 
   useEffect(() => {
     if (reduceMotion) {

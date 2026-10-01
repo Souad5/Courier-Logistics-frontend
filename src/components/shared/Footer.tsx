@@ -1,51 +1,59 @@
 import Link from "next/link";
 
 import { siteConfig } from "@/config/site";
+import type { Dictionary } from "@/i18n/dictionaries";
+import { getI18n } from "@/i18n/server";
 
 import { Logo } from "./Logo";
 
-const COLUMNS = [
+type FooterLabels = Dictionary["nav"]["footer"] & Dictionary["nav"]["public"] & { login: string };
+
+const COLUMNS: Array<{
+  title: keyof FooterLabels;
+  links: Array<{ label: keyof FooterLabels; href: string }>;
+}> = [
   {
-    title: "Ship",
+    title: "ship",
     links: [
-      { title: "Services", href: "/services" },
-      { title: "Pricing", href: "/pricing" },
-      { title: "Send a parcel", href: "/register" },
+      { label: "services", href: "/services" },
+      { label: "pricing", href: "/pricing" },
+      { label: "sendParcel", href: "/register" },
     ],
   },
   {
-    title: "Help",
+    title: "help",
     links: [
-      { title: "Track a parcel", href: "/#track" },
-      { title: "Delivery charges", href: "/#charges" },
-      { title: "Coverage", href: "/#coverage" },
-      { title: "FAQ", href: "/#faq" },
+      { label: "trackParcel", href: "/#track" },
+      { label: "deliveryCharges", href: "/#charges" },
+      { label: "coverage", href: "/#coverage" },
     ],
   },
   {
-    title: "Company",
+    title: "company",
     links: [
-      { title: "About", href: "/about" },
-      { title: "Contact", href: "/contact" },
+      { label: "about", href: "/about" },
+      { label: "contact", href: "/contact" },
     ],
   },
   {
-    title: "Account",
+    title: "account",
     links: [
-      { title: "Log in", href: "/login" },
-      { title: "Create account", href: "/register" },
+      { label: "login", href: "/login" },
+      { label: "createAccount", href: "/register" },
     ],
   },
 ];
 
-export function Footer() {
+export async function Footer() {
+  const { t, f } = await getI18n();
+  const labels: FooterLabels = { ...t.nav.public, ...t.nav.footer, login: t.nav.account.login };
   return (
     <footer className="border-t">
       <div className="container mx-auto grid grid-cols-2 gap-x-6 gap-y-10 px-4 py-12 sm:grid-cols-4 md:grid-cols-[1.5fr_repeat(4,1fr)]">
         <div className="col-span-2 space-y-3 sm:col-span-4 md:col-span-1">
           <Logo />
           <p className="text-muted-foreground max-w-xs text-sm text-pretty">
-            {siteConfig.description}
+            {t.meta.siteDescription}
           </p>
           <a
             href={`mailto:${siteConfig.contactEmail}`}
@@ -55,16 +63,16 @@ export function Footer() {
           </a>
         </div>
         {COLUMNS.map((column) => (
-          <nav key={column.title} aria-label={column.title}>
-            <p className="eyebrow mb-3">{column.title}</p>
+          <nav key={column.title} aria-label={labels[column.title]}>
+            <p className="eyebrow mb-3">{labels[column.title]}</p>
             <ul className="space-y-2 text-sm">
               {column.links.map((link) => (
-                <li key={link.title}>
+                <li key={link.href + link.label}>
                   <Link
                     href={link.href}
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {link.title}
+                    {labels[link.label]}
                   </Link>
                 </li>
               ))}
@@ -74,7 +82,8 @@ export function Footer() {
       </div>
       <div className="border-t">
         <p className="text-muted-foreground container mx-auto px-4 py-5 text-sm">
-          © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
+          © {f.number(new Date().getFullYear(), { useGrouping: false })} {siteConfig.name}.{" "}
+          {t.nav.footer.rights}
         </p>
       </div>
     </footer>

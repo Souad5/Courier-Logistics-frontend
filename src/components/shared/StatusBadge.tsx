@@ -1,4 +1,7 @@
-import { cn, humanize } from "@/lib/utils";
+"use client";
+
+import { useI18n } from "@/i18n/client";
+import { cn } from "@/lib/utils";
 import type { ParcelStatus, PaymentStatus } from "@/types";
 
 const PARCEL_STATUS_STYLES: Record<ParcelStatus, string> = {
@@ -27,6 +30,7 @@ type StatusBadgeProps =
   | { kind: "payment"; status: PaymentStatus; className?: string };
 
 export function StatusBadge(props: StatusBadgeProps) {
+  const { t } = useI18n();
   const style =
     props.kind === "payment"
       ? PAYMENT_STATUS_STYLES[props.status]
@@ -41,7 +45,9 @@ export function StatusBadge(props: StatusBadgeProps) {
       )}
     >
       <span aria-hidden className="size-1.5 rounded-full bg-current opacity-70" />
-      {humanize(props.status)}
+      {props.kind === "payment"
+        ? t.enums.paymentStatus[props.status]
+        : t.enums.parcelStatus[props.status]}
     </span>
   );
 }

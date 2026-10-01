@@ -9,10 +9,12 @@ import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ROLE_HOME } from "@/config/api.config";
 import { publicNav } from "@/config/site";
+import { useI18n } from "@/i18n/client";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
 
 import { AppButton } from "./AppButton";
+import { LanguageToggle } from "./LanguageToggle";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
@@ -24,6 +26,7 @@ import { UserMenu } from "./UserMenu";
 export function Navbar() {
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
+  const { t } = useI18n();
   const reduceMotion = useReducedMotion();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -46,9 +49,9 @@ export function Navbar() {
             : "bg-background/80 h-16 shadow-sm ring-black/5 dark:ring-white/10",
         )}
       >
-        <Logo />
+        <Logo wordmarkClassName="max-[359px]:sr-only" />
 
-        <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
+        <nav aria-label={t.nav.shell.main} className="hidden items-center gap-1 lg:flex">
           {publicNav.map((item) => {
             const active = isActive(item.href);
             return (
@@ -57,7 +60,7 @@ export function Navbar() {
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "focus-visible:ring-ring relative isolate rounded-full px-3.5 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                  "focus-visible:ring-ring relative isolate rounded-full px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors xl:px-3.5 focus-visible:ring-2 focus-visible:outline-none",
                   active
                     ? "text-foreground"
                     : "text-foreground/70 hover:bg-muted/60 hover:text-foreground",
@@ -75,30 +78,31 @@ export function Navbar() {
                     }
                   />
                 )}
-                {item.title}
+                {t.nav.public[item.key]}
               </Link>
             );
           })}
         </nav>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
+          <LanguageToggle />
           <ThemeToggle />
           {user ? (
             <>
               <AppButton asChild className="hidden rounded-full px-4 sm:inline-flex">
-                <Link href={ROLE_HOME[user.role]}>Dashboard</Link>
+                <Link href={ROLE_HOME[user.role]}>{t.nav.account.dashboard}</Link>
               </AppButton>
               <UserMenu />
             </>
           ) : (
             <div className="hidden items-center gap-1.5 sm:flex">
               <AppButton asChild variant="ghost" className="rounded-full px-4">
-                <Link href="/login">Log in</Link>
+                <Link href="/login">{t.nav.account.login}</Link>
               </AppButton>
               <AppButton asChild className="group rounded-full px-4">
                 <Link href="/register">
-                  Get started
-                  <ArrowRight className="transition-transform group-hover:translate-x-0.5" />
+                  {t.nav.account.getStarted}
+                  <ArrowRight className="hidden transition-transform group-hover:translate-x-0.5 xl:block" />
                 </Link>
               </AppButton>
             </div>
@@ -109,8 +113,8 @@ export function Navbar() {
               <AppButton
                 variant="ghost"
                 size="icon"
-                className="rounded-full md:hidden"
-                aria-label="Open menu"
+                className="rounded-full lg:hidden"
+                aria-label={t.nav.shell.openMenu}
               >
                 <Menu />
               </AppButton>
@@ -121,7 +125,7 @@ export function Navbar() {
                   <Logo />
                 </SheetTitle>
               </SheetHeader>
-              <nav aria-label="Mobile" className="flex flex-col gap-1 px-4">
+              <nav aria-label={t.nav.shell.mobile} className="flex flex-col gap-1 px-4">
                 {publicNav.map((item) => (
                   <Link
                     key={item.href}
@@ -135,7 +139,7 @@ export function Navbar() {
                         : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                     )}
                   >
-                    {item.title}
+                    {t.nav.public[item.key]}
                     <ArrowRight className="size-4 opacity-40" aria-hidden />
                   </Link>
                 ))}
@@ -144,19 +148,19 @@ export function Navbar() {
                 {user ? (
                   <AppButton asChild>
                     <Link href={ROLE_HOME[user.role]} onClick={() => setOpen(false)}>
-                      Go to dashboard
+                      {t.nav.account.goToDashboard}
                     </Link>
                   </AppButton>
                 ) : (
                   <>
                     <AppButton asChild variant="outline">
                       <Link href="/login" onClick={() => setOpen(false)}>
-                        Log in
+                        {t.nav.account.login}
                       </Link>
                     </AppButton>
                     <AppButton asChild>
                       <Link href="/register" onClick={() => setOpen(false)}>
-                        Get started
+                        {t.nav.account.getStarted}
                       </Link>
                     </AppButton>
                   </>

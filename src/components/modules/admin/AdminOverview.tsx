@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Card } from "@/components/ui/card";
 import { useDashboardStats } from "@/hooks/useAdmin";
+import { useI18n } from "@/i18n/client";
 import { getErrorMessage } from "@/lib/api-client";
 
 import { ChartAreaInteractive, TIME_RANGES } from "./overview/ChartAreaInteractive";
@@ -22,6 +23,7 @@ const DEFAULT_DAYS = 30;
 
 /** Admin command center. The time range lives in the URL (?days=) and is sent to the API. Must render inside <Suspense>. */
 export function AdminOverview() {
+  const { t } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -82,8 +84,8 @@ export function AdminOverview() {
         <Card>
           <EmptyState
             icon={LineChart}
-            title="Trends aren't available yet"
-            description="The connected server doesn't report daily activity. Deploy the latest backend to see bookings and revenue over time — the totals below are live."
+            title={t.admin.overview.trendsUnavailable.title}
+            description={t.admin.overview.trendsUnavailable.description}
           />
         </Card>
       )}
@@ -91,16 +93,22 @@ export function AdminOverview() {
       <TotalsStrip stats={stats} />
 
       <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-        <ChartCard title="Parcel status" description="Where every parcel stands right now.">
+        <ChartCard
+          title={t.admin.overview.parcelStatus.title}
+          description={t.admin.overview.parcelStatus.description}
+        >
           <StatusDistributionChart breakdown={stats.statusBreakdown} />
         </ChartCard>
-        <ChartCard title="Needs attention" description="Queues that need an admin.">
+        <ChartCard
+          title={t.admin.overview.needsAttention.title}
+          description={t.admin.overview.needsAttention.description}
+        >
           <NeedsAttention breakdown={stats.statusBreakdown} />
         </ChartCard>
         <ChartCard
           className="lg:col-span-2 xl:col-span-1"
-          title="Recent activity"
-          description="Latest recorded actions."
+          title={t.admin.overview.recentActivity.title}
+          description={t.admin.overview.recentActivity.description}
         >
           <RecentActivity />
         </ChartCard>

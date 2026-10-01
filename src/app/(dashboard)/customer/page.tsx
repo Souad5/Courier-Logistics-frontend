@@ -2,16 +2,18 @@ import type { Metadata } from "next";
 
 import { CustomerOverview } from "@/components/modules/customer/CustomerOverview";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { getI18n } from "@/i18n/server";
 
-export const metadata: Metadata = { title: "My Activity" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return { title: t.customer.activity.title };
+}
 
-export default function CustomerHomePage() {
+export default async function CustomerHomePage() {
+  const { t } = await getI18n();
   return (
     <>
-      <PageHeader
-        title="My Activity"
-        description="A quick look at your shipments. Pay for pending ones to get them moving."
-      />
+      <PageHeader title={t.customer.activity.title} description={t.customer.activity.description} />
       <CustomerOverview />
     </>
   );

@@ -3,22 +3,23 @@
 import { ClearFiltersButton } from "@/components/shared/ClearFiltersButton";
 import { FilterSelect } from "@/components/shared/FilterSelect";
 import { SearchInput } from "@/components/shared/SearchInput";
-import { DEFAULT_SORT_OPTIONS, SortSelect } from "@/components/shared/SortSelect";
+import { DEFAULT_SORT_OPTIONS, type SortOption, SortSelect } from "@/components/shared/SortSelect";
+import { TableToolbar } from "@/components/shared/TableToolbar";
 import { useHubs } from "@/hooks/useHubs";
 import type { usePagination } from "@/hooks/usePagination";
-import { humanize } from "@/lib/utils";
+import { useI18n } from "@/i18n/client";
 import { PARCEL_STATUSES, PARCEL_TYPES } from "@/types/enums";
 
 // Must stay within the backend's sortableFields for each list (parcel.service.ts).
-const MINE_SORT = [
+const MINE_SORT: SortOption[] = [
   ...DEFAULT_SORT_OPTIONS,
-  { value: "fee:desc", label: "Fee: high to low" },
-  { value: "fee:asc", label: "Fee: low to high" },
+  { value: "fee:desc", key: "feeDesc" },
+  { value: "fee:asc", key: "feeAsc" },
 ];
-const ADMIN_SORT = [
+const ADMIN_SORT: SortOption[] = [
   ...MINE_SORT,
-  { value: "weightKg:desc", label: "Heaviest first" },
-  { value: "weightKg:asc", label: "Lightest first" },
+  { value: "weightKg:desc", key: "heaviestFirst" },
+  { value: "weightKg:asc", key: "lightestFirst" },
 ];
 
 /**
@@ -34,33 +35,45 @@ export function ParcelFilters({
   searchable?: boolean;
   admin?: boolean;
 }) {
+  const { t } = useI18n();
+  const labels = t.parcels.filters;
   const { query, setSearch, setFilter } = pagination;
 
   return (
-    <>
-      {searchable && (
-        <SearchInput
-          value={String(query.search ?? "")}
-          onSearch={setSearch}
-          placeholder={admin ? "Tracking #, sender or receiver…" : "Tracking # or receiver…"}
-          label="Search parcels"
-        />
-      )}
-      <FilterSelect
-        label="Filter by status"
-        value={query.status as string | undefined}
-        allLabel="All statuses"
-        options={PARCEL_STATUSES.map((s) => ({ value: s, label: humanize(s) }))}
-        onChange={(v) => setFilter("status", v)}
-      />
-      {admin && <AdminParcelFilters pagination={pagination} />}
-      <SortSelect pagination={pagination} options={admin ? ADMIN_SORT : MINE_SORT} />
-      <ClearFiltersButton pagination={pagination} />
-    </>
+    <TableToolbar
+      start={
+        <>
+          {searchable && (
+            <SearchInput
+              value={String(query.search ?? "")}
+              onSearch={setSearch}
+              placeholder={admin ? labels.searchAdmin : labels.searchMine}
+              label={labels.searchLabel}
+            />
+          )}
+          <ClearFiltersButton pagination={pagination} />
+        </>
+      }
+      end={
+        <>
+          <FilterSelect
+            label={labels.status}
+            value={query.status as string | undefined}
+            allLabel={labels.allStatuses}
+            options={PARCEL_STATUSES.map((s) => ({ value: s, label: t.enums.parcelStatus[s] }))}
+            onChange={(v) => setFilter("status", v)}
+          />
+          {admin && <AdminParcelFilters pagination={pagination} />}
+          <SortSelect pagination={pagination} options={admin ? ADMIN_SORT : MINE_SORT} />
+        </>
+      }
+    />
   );
 }
 
 function AdminParcelFilters({ pagination }: { pagination: ReturnType<typeof usePagination> }) {
+  const { t } = useI18n();
+  const labels = t.parcels.filters;
   const { query, setFilter } = pagination;
   const { data } = useHubs({ limit: 100 });
   const hubOptions = (data?.data.hubs ?? []).map((h) => ({ value: h.id, label: h.name }));
@@ -68,23 +81,23 @@ function AdminParcelFilters({ pagination }: { pagination: ReturnType<typeof useP
   return (
     <>
       <FilterSelect
-        label="Filter by type"
+        label={labels.type}
         value={query.type as string | undefined}
-        allLabel="All types"
-        options={PARCEL_TYPES.map((t) => ({ value: t, label: humanize(t) }))}
+        allLabel={labels.allTypes}
+        options={PARCEL_TYPES.map((type) => ({ value: type, label: t.enums.parcelType[type] }))}
         onChange={(v) => setFilter("type", v)}
       />
       <FilterSelect
-        label="Filter by origin hub"
+        label={labels.origin}
         value={query.originHubId as string | undefined}
-        allLabel="Any origin"
+        allLabel={labels.anyOrigin}
         options={hubOptions}
         onChange={(v) => setFilter("originHubId", v)}
       />
       <FilterSelect
-        label="Filter by destination hub"
+        label={labels.destination}
         value={query.destinationHubId as string | undefined}
-        allLabel="Any destination"
+        allLabel={labels.anyDestination}
         options={hubOptions}
         onChange={(v) => setFilter("destinationHubId", v)}
       />

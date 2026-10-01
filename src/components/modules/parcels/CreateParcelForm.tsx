@@ -13,69 +13,73 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { estimateFee } from "@/config/content";
 import { useHubs } from "@/hooks/useHubs";
 import { useCreateParcel } from "@/hooks/useParcels";
-import { cn, formatCurrency, humanize } from "@/lib/utils";
+import { useI18n } from "@/i18n/client";
+import type { Dictionary } from "@/i18n/dictionaries";
+import { type Formatters, interpolate } from "@/i18n/format";
+import { cn } from "@/lib/utils";
 import type { Hub } from "@/types";
 import { PARCEL_TYPES } from "@/types/enums";
 
 // Mirrors courier-backend parcel.validation.ts; optional text fields accept "" in the form.
-const optionalText = (max: number, min = 2) =>
-  z.union([z.literal(""), z.string().trim().min(min, `At least ${min} characters`).max(max)]);
+// Built per render so the messages follow the active language.
+function createParcelSchema(t: Dictionary, f: Formatters) {
+  const atLeast = (n: number) => interpolate(t.booking.errors.atLeast, { n: f.number(n) });
+  const optionalText = (max: number, min = 2) =>
+    z.union([z.literal(""), z.string().trim().min(min, atLeast(min)).max(max)]);
 
-const parcelSchema = z
-  .object({
-    type: z.enum(PARCEL_TYPES, "Select a parcel type"),
-    weightKg: z
-      .number("Weight is required")
-      .positive("Weight must be positive")
-      .max(1000, "Weight exceeds maximum of 1000kg"),
-    dimensions: optionalText(50, 1),
-    notes: optionalText(500, 1),
-    originHubId: z.string().min(1, "Select the origin hub"),
-    destinationHubId: z.string().min(1, "Select the destination hub"),
-    senderName: z.string().trim().min(2, "At least 2 characters").max(60),
-    senderPhone: z.string().trim().min(6, "At least 6 characters").max(20),
-    senderAddress: z.string().trim().min(3, "At least 3 characters").max(200),
-    senderCity: optionalText(60),
-    receiverName: z.string().trim().min(2, "At least 2 characters").max(60),
-    receiverPhone: z.string().trim().min(6, "At least 6 characters").max(20),
-    receiverAddress: z.string().trim().min(3, "At least 3 characters").max(200),
-    receiverCity: optionalText(60),
-  })
-  .refine((v) => v.originHubId !== v.destinationHubId, {
-    path: ["destinationHubId"],
-    message: "Destination must differ from the origin hub",
-  });
+  return z
+    .object({
+      type: z.enum(PARCEL_TYPES, t.booking.errors.typeRequired),
+      weightKg: z
+        .number(t.booking.errors.weightRequired)
+        .positive(t.booking.errors.weightPositive)
+        .max(1000, t.booking.errors.weightMax),
+      dimensions: optionalText(50, 1),
+      notes: optionalText(500, 1),
+      originHubId: z.string().min(1, t.booking.errors.originRequired),
+      destinationHubId: z.string().min(1, t.booking.errors.destinationRequired),
+      senderName: z.string().trim().min(2, atLeast(2)).max(60),
+      senderPhone: z.string().trim().min(6, atLeast(6)).max(20),
+      senderAddress: z.string().trim().min(3, atLeast(3)).max(200),
+      senderCity: optionalText(60),
+      receiverName: z.string().trim().min(2, atLeast(2)).max(60),
+      receiverPhone: z.string().trim().min(6, atLeast(6)).max(20),
+      receiverAddress: z.string().trim().min(3, atLeast(3)).max(200),
+      receiverCity: optionalText(60),
+    })
+    .refine((v) => v.originHubId !== v.destinationHubId, {
+      path: ["destinationHubId"],
+      message: t.booking.errors.sameHub,
+    });
+}
 
-type ParcelFormValues = z.infer<typeof parcelSchema>;
+type ParcelFormValues = z.infer<ReturnType<typeof createParcelSchema>>;
 
-const STEPS: Array<{ title: string; description: string; fields: FieldPath<ParcelFormValues>[] }> =
-  [
-    {
-      title: "Parcel & route",
-      description: "What you're shipping and where it goes.",
-      fields: ["type", "weightKg", "dimensions", "notes", "originHubId", "destinationHubId"],
-    },
-    {
-      title: "Sender",
-      description: "Your details as the parcel sender.",
-      fields: ["senderName", "senderPhone", "senderAddress", "senderCity"],
-    },
-    {
-      title: "Recipient",
-      description: "Who will receive this parcel.",
-      fields: ["receiverName", "receiverPhone", "receiverAddress", "receiverCity"],
-    },
-    { title: "Review", description: "Check everything before booking.", fields: [] },
-  ];
+const STEPS: Array<{
+  key: keyof Dictionary["booking"]["steps"];
+  fields: FieldPath<ParcelFormValues>[];
+}> = [
+  {
+    key: "route",
+    fields: ["type", "weightKg", "dimensions", "notes", "originHubId", "destinationHubId"],
+  },
+  { key: "sender", fields: ["senderName", "senderPhone", "senderAddress", "senderCity"] },
+  {
+    key: "recipient",
+    fields: ["receiverName", "receiverPhone", "receiverAddress", "receiverCity"],
+  },
+  { key: "review", fields: [] },
+];
 
 const withoutEmpty = <T extends Record<string, unknown>>(values: T) =>
   Object.fromEntries(Object.entries(values).filter(([, v]) => v !== "")) as Partial<T>;
 
 export function CreateParcelForm() {
   const router = useRouter();
+  const { t, f, format } = useI18n();
   const [step, setStep] = useState(0);
   const { control, handleSubmit, trigger, getValues } = useForm<ParcelFormValues>({
-    resolver: zodResolver(parcelSchema),
+    resolver: zodResolver(createParcelSchema(t, f)),
     defaultValues: {
       type: "PARCEL",
       dimensions: "",
@@ -119,10 +123,10 @@ export function CreateParcelForm() {
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
       <div className="space-y-6">
-        <ol className="flex items-center gap-2" aria-label="Progress">
+        <ol className="flex items-center gap-2" aria-label={t.booking.progress}>
           {STEPS.map((s, index) => (
             <li
-              key={s.title}
+              key={s.key}
               aria-current={index === step ? "step" : undefined}
               className="flex flex-1 flex-col gap-1.5"
             >
@@ -143,9 +147,9 @@ export function CreateParcelForm() {
                     index === step && "border-signal text-foreground",
                   )}
                 >
-                  {index < step ? <Check className="size-3" /> : index + 1}
+                  {index < step ? <Check className="size-3" /> : f.number(index + 1)}
                 </span>
-                {s.title}
+                {t.booking.steps[s.key].title}
               </span>
             </li>
           ))}
@@ -162,9 +166,13 @@ export function CreateParcelForm() {
           <Card>
             <CardHeader>
               <CardTitle>
-                Step {step + 1} of {STEPS.length}: {STEPS[step].title}
+                {format(t.booking.stepHeading, {
+                  step: f.number(step + 1),
+                  total: f.number(STEPS.length),
+                  title: t.booking.steps[STEPS[step].key].title,
+                })}
               </CardTitle>
-              <CardDescription>{STEPS[step].description}</CardDescription>
+              <CardDescription>{t.booking.steps[STEPS[step].key].description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {step === 0 && (
@@ -173,15 +181,21 @@ export function CreateParcelForm() {
                     <FormSelect
                       control={control}
                       name="type"
-                      label="Parcel type"
-                      options={PARCEL_TYPES.map((t) => ({ label: humanize(t), value: t }))}
+                      label={t.booking.fields.type}
+                      options={PARCEL_TYPES.map((type) => ({
+                        label: t.enums.parcelType[type],
+                        value: type,
+                      }))}
                       required
                     />
                     <FormInput
                       control={control}
                       name="weightKg"
-                      label="Weight (kg)"
+                      label={t.booking.fields.weight}
                       type="number"
+                      inputMode="decimal"
+                      min={0}
+                      max={1000}
                       step="0.1"
                       placeholder="0.5"
                       required
@@ -190,29 +204,29 @@ export function CreateParcelForm() {
                   <FormInput
                     control={control}
                     name="dimensions"
-                    label="Dimensions (L×W×H in cm)"
+                    label={t.booking.fields.dimensions}
                     placeholder="30×20×10"
                   />
                   <FormTextarea
                     control={control}
                     name="notes"
-                    label="Additional notes"
-                    placeholder="Special instructions or package contents"
+                    label={t.booking.fields.notes}
+                    placeholder={t.booking.fields.notesPlaceholder}
                   />
                   <div className="grid gap-4 sm:grid-cols-2">
                     <FormSelect
                       control={control}
                       name="originHubId"
-                      label="Origin hub"
-                      placeholder="Where the parcel starts"
+                      label={t.booking.fields.originHub}
+                      placeholder={t.booking.fields.originPlaceholder}
                       options={hubOptions}
                       required
                     />
                     <FormSelect
                       control={control}
                       name="destinationHubId"
-                      label="Destination hub"
-                      placeholder="Where the parcel goes"
+                      label={t.booking.fields.destinationHub}
+                      placeholder={t.booking.fields.destinationPlaceholder}
                       options={hubOptions}
                       required
                     />
@@ -223,18 +237,28 @@ export function CreateParcelForm() {
               {step === 1 && (
                 <>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <FormInput control={control} name="senderName" label="Full name" required />
+                    <FormInput
+                      control={control}
+                      name="senderName"
+                      label={t.booking.fields.fullName}
+                      required
+                    />
                     <FormInput
                       control={control}
                       name="senderPhone"
-                      label="Phone number"
+                      label={t.booking.fields.phone}
                       type="tel"
                       required
                     />
                   </div>
                   <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
-                    <FormInput control={control} name="senderAddress" label="Address" required />
-                    <FormInput control={control} name="senderCity" label="City" />
+                    <FormInput
+                      control={control}
+                      name="senderAddress"
+                      label={t.booking.fields.address}
+                      required
+                    />
+                    <FormInput control={control} name="senderCity" label={t.booking.fields.city} />
                   </div>
                 </>
               )}
@@ -242,45 +266,72 @@ export function CreateParcelForm() {
               {step === 2 && (
                 <>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <FormInput control={control} name="receiverName" label="Full name" required />
+                    <FormInput
+                      control={control}
+                      name="receiverName"
+                      label={t.booking.fields.fullName}
+                      required
+                    />
                     <FormInput
                       control={control}
                       name="receiverPhone"
-                      label="Phone number"
+                      label={t.booking.fields.phone}
                       type="tel"
                       required
                     />
                   </div>
                   <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
-                    <FormInput control={control} name="receiverAddress" label="Address" required />
-                    <FormInput control={control} name="receiverCity" label="City" />
+                    <FormInput
+                      control={control}
+                      name="receiverAddress"
+                      label={t.booking.fields.address}
+                      required
+                    />
+                    <FormInput
+                      control={control}
+                      name="receiverCity"
+                      label={t.booking.fields.city}
+                    />
                   </div>
                 </>
               )}
 
               {isLast && (
                 <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
-                  <ReviewItem label="Type" value={humanize(review.type)} />
-                  <ReviewItem label="Weight" value={`${review.weightKg} kg`} />
-                  <ReviewItem label="Origin hub" value={hubName(review.originHubId)} />
-                  <ReviewItem label="Destination hub" value={hubName(review.destinationHubId)} />
-                  <ReviewItem label="Dimensions" value={review.dimensions || "—"} />
-                  <ReviewItem label="Notes" value={review.notes || "—"} />
                   <ReviewItem
-                    label="Sender"
+                    label={t.booking.review.type}
+                    value={t.enums.parcelType[review.type]}
+                  />
+                  <ReviewItem
+                    label={t.booking.review.weight}
+                    value={format(t.booking.kg, { n: f.number(review.weightKg) })}
+                  />
+                  <ReviewItem
+                    label={t.booking.review.originHub}
+                    value={hubName(review.originHubId)}
+                  />
+                  <ReviewItem
+                    label={t.booking.review.destinationHub}
+                    value={hubName(review.destinationHubId)}
+                  />
+                  <ReviewItem
+                    label={t.booking.review.dimensions}
+                    value={review.dimensions || "—"}
+                  />
+                  <ReviewItem label={t.booking.review.notes} value={review.notes || "—"} />
+                  <ReviewItem
+                    label={t.booking.review.sender}
                     value={`${review.senderName} · ${review.senderPhone}`}
                     detail={[review.senderAddress, review.senderCity].filter(Boolean).join(", ")}
                   />
                   <ReviewItem
-                    label="Recipient"
+                    label={t.booking.review.recipient}
                     value={`${review.receiverName} · ${review.receiverPhone}`}
                     detail={[review.receiverAddress, review.receiverCity]
                       .filter(Boolean)
                       .join(", ")}
                   />
-                  <p className="text-muted-foreground sm:col-span-2">
-                    The delivery fee is calculated when you book. You can pay from My Parcels.
-                  </p>
+                  <p className="text-muted-foreground sm:col-span-2">{t.booking.review.feeNote}</p>
                 </dl>
               )}
             </CardContent>
@@ -294,11 +345,11 @@ export function CreateParcelForm() {
                 disabled={create.isPending}
                 onClick={() => setStep(step - 1)}
               >
-                Back
+                {t.booking.actions.back}
               </AppButton>
             )}
             <AppButton type="submit" loading={create.isPending}>
-              {isLast ? "Book parcel" : "Continue"}
+              {isLast ? t.booking.actions.book : t.booking.actions.continue}
             </AppButton>
             <AppButton
               type="button"
@@ -306,7 +357,7 @@ export function CreateParcelForm() {
               disabled={create.isPending}
               onClick={() => router.back()}
             >
-              Cancel
+              {t.booking.actions.cancel}
             </AppButton>
           </div>
         </form>
@@ -319,6 +370,7 @@ export function CreateParcelForm() {
 
 /** Sticky side panel that follows the form; the fee is a preview of the server's calculateFee. */
 function ShipmentSummary({ control, hubs }: { control: Control<ParcelFormValues>; hubs: Hub[] }) {
+  const { t, f, format } = useI18n();
   const [type, weightKg, originHubId, destinationHubId, receiverName] = useWatch({
     control,
     name: ["type", "weightKg", "originHubId", "destinationHubId", "receiverName"],
@@ -334,45 +386,52 @@ function ShipmentSummary({ control, hubs }: { control: Control<ParcelFormValues>
   return (
     <Card className="lg:sticky lg:top-20">
       <CardHeader>
-        <CardTitle>Shipment summary</CardTitle>
-        <CardDescription>Updates as you fill in the form.</CardDescription>
+        <CardTitle>{t.booking.summary.title}</CardTitle>
+        <CardDescription>{t.booking.summary.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5 text-sm">
         <dl className="space-y-3">
-          <SummaryRow label="Type" value={humanize(type)} />
-          <SummaryRow label="Weight" value={weight ? `${weight} kg` : "—"} />
-          <SummaryRow label="From" value={origin ? `${origin.name} · ${origin.zoneName}` : "—"} />
+          <SummaryRow label={t.booking.summary.type} value={t.enums.parcelType[type]} />
           <SummaryRow
-            label="To"
+            label={t.booking.summary.weight}
+            value={weight ? format(t.booking.kg, { n: f.number(weight) }) : "—"}
+          />
+          <SummaryRow
+            label={t.booking.summary.from}
+            value={origin ? `${origin.name} · ${origin.zoneName}` : "—"}
+          />
+          <SummaryRow
+            label={t.booking.summary.to}
             value={destination ? `${destination.name} · ${destination.zoneName}` : "—"}
           />
-          <SummaryRow label="Recipient" value={receiverName || "—"} />
+          <SummaryRow label={t.booking.summary.recipient} value={receiverName || "—"} />
         </dl>
 
         <div className="space-y-2 border-t pt-4">
           {fee ? (
             <>
-              <SummaryRow label="Base fee" value={formatCurrency(fee.baseFee)} muted />
-              <SummaryRow label="Weight charge" value={formatCurrency(fee.weightFee)} muted />
-              <SummaryRow label="Zone surcharges" value={formatCurrency(fee.zoneSurcharge)} muted />
+              <SummaryRow label={t.booking.summary.baseFee} value={f.currency(fee.baseFee)} muted />
+              <SummaryRow
+                label={t.booking.summary.weightCharge}
+                value={f.currency(fee.weightFee)}
+                muted
+              />
+              <SummaryRow
+                label={t.booking.summary.zoneSurcharges}
+                value={f.currency(fee.zoneSurcharge)}
+                muted
+              />
               <div className="flex items-baseline justify-between border-t pt-3">
-                <span className="font-medium">Estimated fee</span>
-                <span className="text-xl font-semibold tabular-nums">
-                  {formatCurrency(fee.total)}
-                </span>
+                <span className="font-medium">{t.booking.summary.estimatedFee}</span>
+                <span className="text-xl font-semibold tabular-nums">{f.currency(fee.total)}</span>
               </div>
             </>
           ) : (
-            <p className="text-muted-foreground">
-              Add the weight and both hubs to see an estimated fee.
-            </p>
+            <p className="text-muted-foreground">{t.booking.summary.needInputs}</p>
           )}
         </div>
 
-        <p className="text-muted-foreground border-t pt-4">
-          The final fee is confirmed when you book. Pay from My Parcels or Payments to start the
-          pickup.
-        </p>
+        <p className="text-muted-foreground border-t pt-4">{t.booking.summary.finalNote}</p>
       </CardContent>
     </Card>
   );
