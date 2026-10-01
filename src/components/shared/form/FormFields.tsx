@@ -90,6 +90,7 @@ export function FormSelect<
 >({
   control,
   name,
+  containerClassName,
   ...props
 }: ControlProps<T, N> &
   Omit<AppSelectProps<V>, "name" | "value" | "onValueChange" | "onBlur" | "error">) {
@@ -109,6 +110,7 @@ export function FormSelect<
       onValueChange={onChange}
       onBlur={onBlur}
       error={fieldState.error?.message}
+      containerClassName={containerClassName}
     />
   );
 }

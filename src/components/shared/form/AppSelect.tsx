@@ -82,18 +82,38 @@ export function AppSelect<V extends string = string>({
       >
         <SelectTrigger
           id={selectId}
-          className={cn("w-full", className)}
+          className={cn(
+            "w-full transition-all duration-150",
+            "hover:border-input/80 hover:bg-accent/30",
+            "focus-visible:ring-2 focus-visible:ring-offset-1",
+            disabled && "cursor-not-allowed opacity-60",
+            error && "border-destructive/80 bg-destructive/5",
+            className,
+          )}
           aria-label={ariaLabel}
           {...fieldA11yProps(selectId, error)}
         >
-          <SelectValue placeholder={placeholder} />
+          <SelectValue
+            placeholder={<span className="text-muted-foreground font-normal">{placeholder}</span>}
+          />
         </SelectTrigger>
-        <SelectContent>
-          {options.map((option) => (
-            <SelectItem key={option.value} value={option.value} disabled={option.disabled}>
-              {option.label}
-            </SelectItem>
-          ))}
+        <SelectContent className="min-w-[var(--radix-select-trigger-width)]">
+          {options.length === 0 ? (
+            <div className="py-6 text-center text-sm text-muted-foreground">
+              No options available
+            </div>
+          ) : (
+            options.map((option) => (
+              <SelectItem
+                key={option.value}
+                value={option.value}
+                disabled={option.disabled}
+                className={cn("cursor-pointer", option.disabled && "cursor-not-allowed opacity-50")}
+              >
+                <span className="flex items-center gap-2">{option.label}</span>
+              </SelectItem>
+            ))
+          )}
         </SelectContent>
       </Select>
     </AppField>

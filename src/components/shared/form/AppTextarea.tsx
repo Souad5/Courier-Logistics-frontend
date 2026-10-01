@@ -66,7 +66,7 @@ export function AppTextarea({
       {showCount && maxLength && (
         <p
           className={cn(
-            "text-muted-foreground -mt-1 text-right text-xs tabular-nums",
+            "text-muted-foreground -mt-1 text-right text-sm tabular-nums",
             count >= maxLength && "text-destructive",
           )}
           aria-live="polite"
