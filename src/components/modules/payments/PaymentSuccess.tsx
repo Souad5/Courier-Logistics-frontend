@@ -32,7 +32,7 @@ export function PaymentSuccess({ sessionId }: { sessionId?: string }) {
           shortly.
         </p>
         {sessionId && (
-          <p className="text-muted-foreground font-mono text-xs break-all">Ref: {sessionId}</p>
+          <p className="text-muted-foreground font-mono text-sm break-all">Ref: {sessionId}</p>
         )}
         <AppButton asChild>
           <Link href="/customer/parcels">View my parcels</Link>

@@ -30,7 +30,7 @@ export function DemoLoginButtons() {
 
   return (
     <div className="space-y-3">
-      <div className="text-muted-foreground flex items-center gap-3 text-xs uppercase">
+      <div className="text-muted-foreground flex items-center gap-3 text-sm uppercase">
         <span className="bg-border h-px flex-1" />
         1-click demo login
         <span className="bg-border h-px flex-1" />
@@ -51,7 +51,7 @@ export function DemoLoginButtons() {
               onClick={() => handleDemoLogin(role, email)}
               aria-label={`Log in as demo ${label}`}
             >
-              <span className="text-xs">{label}</span>
+              <span className="text-sm">{label}</span>
             </AppButton>
           );
         })}

@@ -21,7 +21,7 @@ export function ParcelStatusTimeline({ history }: { history: ParcelStatusHistory
           />
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={entry.status} />
-            <time className="text-muted-foreground text-xs">
+            <time className="text-muted-foreground text-sm">
               {formatDate(entry.createdAt, true)}
             </time>
           </div>

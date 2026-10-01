@@ -115,7 +115,7 @@ export function ProofOfDeliveryDialog({
             Choose photo
           </AppButton>
         )}
-        <p className="text-muted-foreground text-xs">
+        <p className="text-muted-foreground text-sm">
           JPEG, PNG or WebP, up to 5 MB. Available while a parcel is out for delivery or delivered.
         </p>
       </div>

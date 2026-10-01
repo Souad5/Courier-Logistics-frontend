@@ -92,7 +92,7 @@ export function LifecycleShowcase() {
           >
             <span
               className={cn(
-                "grid size-6 shrink-0 place-items-center rounded-full text-xs",
+                "grid size-6 shrink-0 place-items-center rounded-full text-sm",
                 i < index
                   ? "bg-foreground text-background"
                   : i === index
@@ -124,7 +124,7 @@ export function LifecycleShowcase() {
           >
             <div className="flex flex-wrap items-center gap-2">
               <StatusBadge status={stage.status} />
-              <span className="text-muted-foreground text-xs">Handled by {stage.actor}</span>
+              <span className="text-muted-foreground text-sm">Handled by {stage.actor}</span>
             </div>
             <p className="eyebrow">
               Stage {index + 1} of {STAGES.length}
