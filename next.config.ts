@@ -6,9 +6,16 @@ const nextConfig: NextConfig = {
   // babel-plugin-react-compiler on files with JSX/hooks only. ESLint's
   // react-hooks rules report code the compiler has to skip.
   reactCompiler: true,
+  experimental: {
+    serverActions: {
+      allowedOrigins: ["192.168.0.80:3003", "localhost:3003"],
+    },
+  },
 
   // Proof-of-delivery photos are served from Cloudinary.
-  images: { remotePatterns: [{ protocol: "https", hostname: "res.cloudinary.com" }] },
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "res.cloudinary.com" }],
+  },
 
   // Dev only: lets the dev server be opened from other hosts on the LAN
   // (e.g. http://192.168.0.175:3000, or a phone on the same Wi-Fi). Without
