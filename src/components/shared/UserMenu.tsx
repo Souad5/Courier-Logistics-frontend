@@ -34,8 +34,8 @@ export function UserMenu() {
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="font-normal">
           <p className="text-sm font-medium">{user.name}</p>
-          <p className="text-muted-foreground truncate text-xs">{user.email}</p>
-          <p className="text-muted-foreground mt-1 text-xs">{humanize(user.role)}</p>
+          <p className="text-muted-foreground truncate text-sm">{user.email}</p>
+          <p className="text-muted-foreground mt-1 text-sm">{humanize(user.role)}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>

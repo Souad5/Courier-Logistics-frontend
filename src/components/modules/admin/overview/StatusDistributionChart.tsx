@@ -61,7 +61,7 @@ export function StatusDistributionChart({
 
   return (
     <div className="grid items-center gap-4 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-      <div className="relative mx-auto h-48 w-48">
+      <div className="relative h-48 w-full sm:h-56 md:h-64">
         <ChartContainer config={chartConfig} className="aspect-square h-full w-full">
           <PieChart>
             <ChartTooltip content={<ChartTooltipContent hideLabel nameKey="key" />} />
@@ -83,7 +83,7 @@ export function StatusDistributionChart({
         <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
           <div>
             <p className="text-2xl font-semibold tabular-nums">{total}</p>
-            <p className="text-muted-foreground text-xs">parcels</p>
+            <p className="text-muted-foreground text-sm">parcels</p>
           </div>
         </div>
       </div>
@@ -100,7 +100,7 @@ export function StatusDistributionChart({
             </span>
             <span className="text-muted-foreground tabular-nums">
               {d.value}
-              <span className="ml-1 text-xs">({Math.round((d.value / total) * 100)}%)</span>
+              <span className="ml-1 text-sm">({Math.round((d.value / total) * 100)}%)</span>
             </span>
           </li>
         ))}

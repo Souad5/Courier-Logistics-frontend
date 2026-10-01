@@ -49,20 +49,20 @@ export function RecentActivity() {
           <li key={log.id} className="flex items-start gap-3">
             <span
               aria-hidden
-              className="bg-muted text-foreground mt-0.5 grid size-8 shrink-0 place-items-center rounded-full text-xs font-semibold"
+              className="bg-muted text-foreground mt-0.5 grid size-8 shrink-0 place-items-center rounded-full text-sm font-semibold"
             >
               {(log.actor?.name ?? "S").charAt(0).toUpperCase()}
             </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{humanize(log.action)}</p>
-              <p className="text-muted-foreground truncate text-xs">
+              <p className="text-muted-foreground truncate text-sm">
                 {log.actor?.name ?? "System"}
                 {log.entityType ? ` · ${humanize(log.entityType)}` : ""}
               </p>
             </div>
             <time
               dateTime={log.createdAt}
-              className="text-muted-foreground shrink-0 text-xs"
+              className="text-muted-foreground shrink-0 text-sm"
               title={new Date(log.createdAt).toLocaleString()}
             >
               {formatRelativeTime(log.createdAt)}

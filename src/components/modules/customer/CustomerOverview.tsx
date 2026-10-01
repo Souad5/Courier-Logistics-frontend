@@ -102,11 +102,11 @@ export function CustomerOverview() {
                   <div className="min-w-0">
                     <Link
                       href={`/track/${p.trackingNumber}`}
-                      className="font-mono text-xs font-semibold hover:underline"
+                      className="font-mono text-sm font-semibold hover:underline"
                     >
                       {p.trackingNumber}
                     </Link>
-                    <p className="text-muted-foreground truncate text-xs">
+                    <p className="text-muted-foreground truncate text-sm">
                       To {p.receiverName} · {formatDate(p.createdAt)}
                     </p>
                   </div>

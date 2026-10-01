@@ -65,9 +65,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-[1400px] flex-1 space-y-6 p-4 md:p-6 lg:p-8">
-          {children}
-        </main>
+        <main className="w-full flex-1 space-y-6 p-4 md:p-6 lg:p-8">{children}</main>
       </div>
 
       <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>

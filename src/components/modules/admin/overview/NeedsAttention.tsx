@@ -46,7 +46,7 @@ export function NeedsAttention({ breakdown }: { breakdown: DashboardStats["statu
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-sm font-medium">{row.label}</span>
-              <span className="text-muted-foreground block truncate text-xs">{row.hint}</span>
+              <span className="text-muted-foreground block truncate text-sm">{row.hint}</span>
             </span>
             <ChevronRight
               className="text-muted-foreground size-4 transition-transform group-hover:translate-x-0.5"

@@ -35,9 +35,9 @@ export function TotalsStrip({ stats }: { stats: DashboardStats }) {
       <dl className="bg-border grid grid-cols-2 gap-px overflow-hidden rounded-xl border md:grid-cols-3 xl:grid-cols-6">
         {items.map((item) => (
           <div key={item.label} className="bg-card space-y-1 p-4">
-            <dt className="text-muted-foreground text-xs">{item.label}</dt>
+            <dt className="text-muted-foreground text-sm">{item.label}</dt>
             <dd className="text-lg font-semibold tracking-tight tabular-nums">{item.value}</dd>
-            {item.note && <dd className="text-muted-foreground text-xs">{item.note}</dd>}
+            {item.note && <dd className="text-muted-foreground text-sm">{item.note}</dd>}
           </div>
         ))}
       </dl>

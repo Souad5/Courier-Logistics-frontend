@@ -19,7 +19,7 @@ export function StatCard({ title, value, icon: Icon, hint, loading, className }:
     <Card className={cn("gap-0 py-4", className)}>
       <CardContent className="space-y-2">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-muted-foreground text-xs font-medium">{title}</p>
+          <p className="text-muted-foreground text-sm font-medium">{title}</p>
           {Icon && <Icon className="text-muted-foreground size-4" aria-hidden />}
         </div>
         {loading ? (
@@ -27,7 +27,7 @@ export function StatCard({ title, value, icon: Icon, hint, loading, className }:
         ) : (
           <p className="text-2xl font-semibold tracking-tight tabular-nums">{value}</p>
         )}
-        {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
+        {hint && <p className="text-muted-foreground text-sm">{hint}</p>}
       </CardContent>
     </Card>
   );

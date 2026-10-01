@@ -38,7 +38,7 @@ const chartConfig = {
 function Delta({ current, previous }: { current: number; previous: number }) {
   if (previous === 0) {
     return (
-      <span className="text-muted-foreground text-xs">
+      <span className="text-muted-foreground text-sm">
         {current === 0 ? "No activity in either period" : "No activity in the previous period"}
       </span>
     );
@@ -49,7 +49,7 @@ function Delta({ current, previous }: { current: number; previous: number }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 text-xs font-medium",
+        "inline-flex items-center gap-1 text-sm font-medium",
         up ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400",
       )}
     >
@@ -127,7 +127,7 @@ export function ChartAreaInteractive({
           value={String(period.days)}
           onValueChange={(value) => onDaysChange(Number(value))}
           options={TIME_RANGES.map((r) => ({ value: String(r.days), label: r.label }))}
-          className="rounded-lg sm:w-40"
+          className="rounded-lg"
           containerClassName="w-full sm:ml-auto sm:w-auto"
         />
       </CardHeader>
@@ -149,12 +149,12 @@ export function ChartAreaInteractive({
             {metric === tab.key && (
               <span aria-hidden className="bg-signal absolute inset-x-0 bottom-0 h-0.5" />
             )}
-            <span className="text-muted-foreground text-xs">{tab.label}</span>
+            <span className="text-muted-foreground text-sm">{tab.label}</span>
             <span className="text-xl font-semibold tracking-tight tabular-nums sm:text-3xl">
               {tab.value}
             </span>
             <Delta current={tab.current} previous={tab.previous} />
-            {tab.note && <span className="text-muted-foreground text-xs">{tab.note}</span>}
+            {tab.note && <span className="text-muted-foreground text-sm">{tab.note}</span>}
           </button>
         ))}
       </div>
