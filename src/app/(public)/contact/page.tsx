@@ -72,7 +72,7 @@ export default function ContactPage() {
                   <channel.icon className="size-5" aria-hidden />
                 </span>
                 <h2 className="font-semibold">{channel.title}</h2>
-                <p className="text-muted-foreground flex-1 text-sm break-words">{channel.detail}</p>
+                <p className="text-muted-foreground flex-1 text-sm wrap-break-word">{channel.detail}</p>
                 <span className="inline-flex items-center gap-1 text-sm font-medium">
                   {channel.cta}
                   <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
@@ -101,7 +101,7 @@ export default function ContactPage() {
           <PhotoPanel
             src={sendImg}
             alt="A parcel being handed from one person to another"
-            className="aspect-[4/3]"
+            className="aspect-4/3"
             sizes="(min-width: 1024px) 40vw, 100vw"
           />
           <div className="bg-muted/40 space-y-4 rounded-3xl p-6 md:p-8">
