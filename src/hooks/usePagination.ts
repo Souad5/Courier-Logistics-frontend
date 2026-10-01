@@ -38,8 +38,13 @@ export function usePagination(defaults: { limit?: number } = {}) {
     [pathname, router, searchParams],
   );
 
+  // Everything except paging is a filter the user chose (search, status, sort…).
+  const filterKeys = [...searchParams.keys()].filter((key) => key !== "page" && key !== "limit");
+
   return {
     query,
+    hasFilters: filterKeys.length > 0,
+    clearFilters: () => setParams(Object.fromEntries(filterKeys.map((key) => [key, null]))),
     setPage: (page: number) => setParams({ page }, false),
     setLimit: (limit: number) => setParams({ limit }),
     setSearch: (search: string) => setParams({ search }),
