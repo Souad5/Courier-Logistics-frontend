@@ -129,5 +129,7 @@ export const admin: typeof en = {
     allActions: "সব কার্যক্রম",
     entityFilter: "বিষয় অনুযায়ী ফিল্টার",
     allEntities: "সব বিষয়",
+    searchLabel: "অডিট লগ খুঁজুন",
+    searchPlaceholder: "সম্পাদনকারী, ইমেইল, IP, আইডি বা কার্যক্রম…",
   },
 };

@@ -1,56 +1,65 @@
-# Courier & Logistics Platform — Frontend (B7A7)
+# SwiftParcel — Courier & Logistics Frontend
 
-Next.js 16 (App Router) + TypeScript frontend for the B7A6 `courier-backend` REST API. Three role-based dashboards (Admin, Customer, Courier), public marketing pages, public parcel tracking, Stripe Checkout payments, and a 1-click demo login.
+The web client for a courier platform: customers book and pay for parcels, couriers deliver them, and admins run the hub network. It talks to a separate Express/PostgreSQL API ([Courier-Logistics-backend](https://github.com/Souad5/Courier-Logistics-backend)), which owns every business rule — fees, status transitions and permissions. This app mirrors those rules for display; it never decides them.
 
-## Stack
+**Live:** https://courier-logistics-frontend-eight.vercel.app
 
-| Concern         | Library                                                       |
-| --------------- | ------------------------------------------------------------- |
-| Framework       | Next.js 16 App Router, React 19, TypeScript                   |
-| Styling / UI    | Tailwind CSS v4, shadcn/ui (Radix, Nova preset), lucide-react |
-| Motion / themes | framer-motion, next-themes                                    |
-| Server state    | @tanstack/react-query (+ devtools in dev)                     |
-| Client state    | zustand (auth user, sidebar)                                  |
-| Forms           | react-hook-form + zod 4 (`@hookform/resolvers`)               |
-| Charts          | recharts                                                      |
-| Tooling         | Biome (format + lint), ESLint (Next.js + React Compiler rules), React Compiler |
-| Toasts          | sonner                                                        |
-| Payments        | Stripe Checkout redirect (`@stripe/stripe-js` available)      |
-| Auth helpers    | jose (JWT decode), js-cookie                                  |
+## What each role can do
 
-## Getting started
+**Anyone (no account)**
+- Track a parcel by tracking number and see its full status history and delivery photo.
+- Estimate a delivery fee from weight and the pickup and delivery hubs.
+- Browse the hub coverage list, pricing table, services and FAQ.
+
+**Customer**
+- Book a parcel in four steps, with a live fee estimate while filling in the form.
+- Pay by card through Stripe Checkout.
+- Follow their parcels and payments, with search, status filters and sorting.
+
+**Courier**
+- See assigned parcels, update their status and upload a proof-of-delivery photo.
+- Go on or off duty, and see earnings from delivered parcels.
+
+**Admin**
+- Overview with revenue and shipment charts (7, 30, 90 or 365 days).
+- Manage every parcel: assign couriers, update status, filter by status, type and hub.
+- Manage users and their roles, and the hubs and zones.
+- Read the audit log, searchable by actor, email, IP, entity ID or action.
+
+The interface is available in English and Bangla.
+
+## Tech stack
+
+- **Next.js 16** (App Router) with **React 19**, TypeScript and the React Compiler
+- **Tailwind CSS v4**, shadcn/ui on Radix, lucide icons, Framer Motion
+- **TanStack Query** for server state, **Zustand** for the signed-in user and UI state
+- **React Hook Form** + **Zod 4** for forms, mirroring the backend's validation
+- **Recharts** for the admin charts
+- **Biome** for formatting and linting, plus ESLint for the React Compiler and Next.js rules
+
+## Running it locally
+
+You need Node.js 20.9 or newer and a running backend. The backend lives in a sibling folder:
 
 ```bash
-# 1. Backend (sibling folder) — needs its own .env
-cd ../courier-backend
+# Backend (needs its own .env — see that repo)
+cd ../Courier-Logistics-backend
 npm install
-npm run seed        # once: creates the demo accounts used by 1-click login
-npm run dev         # http://localhost:5000
+npm run seed     # once: creates the demo accounts and sample hubs/parcels
+npm run dev      # http://localhost:5000
 
-# 2. Frontend
-cd ../frontend
+# Frontend
+cd ../Courier-Logistics-frontend
 npm install
-cp .env.example .env.local   # defaults already point at localhost:5000
-npm run dev                  # http://localhost:3000
+cp .env.example .env.local
+npm run dev      # http://localhost:3003
 ```
 
-In development you can open the app at `http://localhost:3000` or at your network address, e.g. `http://192.168.0.175:3000` (or from a phone on the same Wi-Fi). Two settings in `next.config.ts` make that work:
-- **API forwarding.** API calls go to the page's own `/api/v1/*`, and the dev server forwards them to `NEXT_PUBLIC_API_BASE_URL`. The backend's CORS list therefore doesn't matter locally.
-- **`allowedDevOrigins`** lets `192.168.*.*` addresses use the dev server. Without it, every click would be a full page reload.
+The dev server runs on **port 3003**. During development the browser only ever calls the frontend's own `/api/v1/*`, and `next.config.ts` forwards those requests to the backend. That means you can open the app from another device on your network (a phone, say) without touching the backend's CORS settings.
 
-**Production calls the backend directly**, so the deployed frontend's URL must be in the backend's `CLIENT_URL` (comma-separated).
+### Demo accounts
 
-### Environment variables
-
-| Variable                             | Default                        | Purpose                                |
-| ------------------------------------ | ------------------------------ | -------------------------------------- |
-| `NEXT_PUBLIC_API_BASE_URL`           | `http://localhost:5000/api/v1` | Backend base URL (validated in `src/env.ts`) |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | —                              | Only needed for future Stripe.js UI    |
-| `NEXT_PUBLIC_SITE_URL`               | `http://localhost:3000`        | Public URL of this site — canonical links, social previews, sitemap. **Set it to the real domain in production.** |
-
-## Demo accounts
-
-The login page has one-click buttons for each role (all use `Password@123`, created by the backend seed):
+The login page has one-click buttons for each role. They only work against a seeded database. All of them use the password `Password@123`.
 
 | Role     | Email                   | Lands on    |
 | -------- | ----------------------- | ----------- |
@@ -58,53 +67,80 @@ The login page has one-click buttons for each role (all use `Password@123`, crea
 | Customer | `customer1@courier.com` | `/customer` |
 | Courier  | `courier1@courier.com`  | `/courier`  |
 
+### Environment variables
+
+All three are public (they end up in the browser bundle) and are validated in `src/env.ts`. They're baked in at build time, so changing one means rebuilding.
+
+| Variable                             | Example                        | Used for |
+| ------------------------------------ | ------------------------------ | -------- |
+| `NEXT_PUBLIC_API_BASE_URL`           | `http://localhost:5000/api/v1` | The backend API. |
+| `NEXT_PUBLIC_SITE_URL`               | `http://localhost:3003`        | Canonical links, social previews, `sitemap.xml` and `robots.txt`. Set it to the real domain in production. |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_test_…`                    | Optional. Payments use a Stripe Checkout redirect created by the backend, so this isn't needed today. |
+
 ## Scripts
 
-| Command         | Description                   |
-| --------------- | ----------------------------- |
-| `npm run dev`   | Dev server with hot reload    |
-| `npm run build` | Production build              |
-| `npm start`     | Serve the production build    |
-| `npm run lint`     | Biome check + ESLint (Next.js & React Compiler rules) |
-| `npm run lint:fix` | Biome auto-fix/format, then ESLint                   |
-| `npm run format`   | Format with Biome                                    |
+| Command            | What it does |
+| ------------------ | ------------ |
+| `npm run dev`      | Development server on port 3003 |
+| `npm run build`    | Production build (also type-checks) |
+| `npm start`        | Serve the production build |
+| `npm run lint`     | Biome, then ESLint — both must pass |
+| `npm run lint:fix` | Apply Biome's fixes and formatting, then run ESLint |
+| `npm run format`   | Format with Biome |
 
-## Routes
+There is no automated test suite in this repo. Before pushing, run `npm run lint && npm run build`.
 
-| Group         | Routes                                                                                      | Access         |
-| ------------- | ------------------------------------------------------------------------------------------- | -------------- |
-| `(public)`    | `/`, `/about`, `/services`, `/pricing`, `/contact`, `/track/[trackingNumber]`               | Everyone       |
-| `(auth)`      | `/login`, `/register`                                                                       | Logged-out     |
-| `(dashboard)` | `/admin/*` (overview, parcels, users, hubs, audit-logs)                                     | `ADMIN`        |
-|               | `/customer/*` (activity, parcels, parcels/new, payments, profile)                           | `CUSTOMER`     |
-|               | `/courier/*` (tasks, earnings, availability)                                                | `COURIER`      |
-| `(payment)`   | `/success`, `/cancel` (Stripe Checkout return URLs)                                         | Everyone       |
+## How it fits together
 
-## SEO
+**API calls.** Every request goes through `apiClient` (`src/lib/api-client.ts`), using paths from `ENDPOINTS` (`src/config/api.config.ts`). It unwraps the backend's `{ success, message, meta, data }` envelope and throws an `ApiClientError` on failure. Components never call `fetch` directly; they use the React Query hooks in `src/hooks/`, keyed by `src/lib/query-keys.ts`.
 
-SEO uses the Next.js Metadata API, not react-helmet. The tags are rendered into the server HTML, so crawlers and link-preview bots can read them without running JavaScript.
+**Authentication.** Logging in returns an access token and a refresh token, which are stored as cookies. When a request comes back `401`, the client refreshes the token once and retries. If the refresh fails, it signs the user out and sends them to `/login`. Refreshing is deliberately single-flight, because the backend rate-limits its auth endpoints to 20 requests per 15 minutes.
 
-- **Per-page tags:** `pageMetadata()` in `src/lib/seo.ts` sets the title, description, canonical URL, Open Graph and Twitter tags.
-- **Private pages are noindex:** the dashboards, payment pages and `/track/*` are marked `noindex`.
-- **Generated files:** `/sitemap.xml`, `/robots.txt` and `/manifest.webmanifest`.
-- **Social preview image:** served at `/og`, generated at build time.
-- **Structured data:** the home page has schema.org JSON-LD (Organization, and WebSite with tracking search).
+**Route protection.** `src/proxy.ts` (Next 16's replacement for `middleware.ts`) reads the role from the access-token cookie and keeps each role inside its own area: `/admin`, `/customer` or `/courier`. It only reads the token; the backend verifies it on every request.
 
-## Project structure
+**Lists and filters.** Pagination, search, filters and sort order live in the URL (`usePagination`). A filtered view can be bookmarked or shared, and survives a reload. Only filters the backend supports are offered.
+
+**Languages.** English and Bangla dictionaries live in `src/i18n/dictionaries/`. The chosen language is kept in a `lang` cookie and read on the server, so pages render in the right language from the first byte. The Bangla dictionary is typed against the English one, so a missing translation is a build error.
+
+**Fees.** The pricing page, the fee calculator and the booking form all show estimates using `estimateFee()` in `src/config/content.ts`. It's a copy of the backend's formula (base fee + weight × rate + a surcharge for each hub's zone). The backend always calculates the amount that's actually charged.
+
+## Project layout
 
 ```text
 src/
-├── app/                 # Route groups: (public) (auth) (dashboard) (payment) + global error/not-found
+├── app/            Routes, split into (public), (auth), (dashboard) and (payment) groups
 ├── components/
-│   ├── ui/              # shadcn primitives (generated — prefer re-adding over hand edits)
-│   ├── shared/          # Navbar, Footer, Sidebar, DashboardShell, DataTable, StatCard, StatusBadge…
-│   ├── modules/         # Domain components: auth (DemoLoginButtons), parcels, hubs, payments, admin
-│   └── providers/       # RootProvider = Theme + React Query + StoreHydrator + Auth + Toaster
-├── config/              # site.ts (nav, demo accounts), api.config.ts (ENDPOINTS, ROLE_HOME), content.ts
-├── hooks/               # useAuth, useParcels, useHubs, useAdmin, usePagination, useDebounce
-├── lib/                 # api-client, auth-storage, query-keys, stripe, utils
-├── store/               # zustand: auth.store, ui.store
-├── types/               # Enums, entities and API envelopes mirroring the backend
-├── env.ts               # zod-validated public env
-└── proxy.ts             # Role-based route guard (Next 16 name for middleware)
+│   ├── modules/    Feature components, one folder per area (parcels, payments, admin, …)
+│   ├── shared/     Navbar, DataTable, filters, dialogs and other cross-cutting pieces
+│   └── ui/         shadcn/ui primitives
+├── config/         API endpoints, navigation, pricing and marketing copy
+├── hooks/          React Query hooks, one per backend area
+├── i18n/           English and Bangla dictionaries and formatters
+├── lib/            API client, auth cookies, SEO helpers
+├── store/          Zustand stores
+├── types/          Types and enums mirroring the backend
+└── proxy.ts        Role-based route guard
 ```
+
+## Deployment
+
+The app is deployed on Vercel, and the project is connected to this GitHub repository. Every push to `main` deploys to production; other branches get a preview URL.
+
+In production the browser calls the backend directly instead of going through the dev proxy. Two settings have to agree:
+
+- `NEXT_PUBLIC_API_BASE_URL` on this project points at the backend.
+- The backend's `CLIENT_URL` (a comma-separated list) includes this site's URL. It controls CORS, and also where Stripe is allowed to send customers back after paying.
+
+If you add a custom domain, add it to the backend's `CLIENT_URL` and update `NEXT_PUBLIC_SITE_URL` here.
+
+## Known limitations
+
+These come from the backend API as it stands today:
+
+- There's no endpoint that lists a customer's payments. The Payments page reads the payment attached to each of their parcels instead.
+- There's no courier earnings endpoint. Earnings are added up from the courier's delivered parcels.
+- The contact form isn't sent anywhere yet; it validates and confirms in the browser only.
+
+## Photo credits
+
+Photos on the public pages are from [Unsplash](https://unsplash.com/license). Each file's source is listed in `src/assets/landing/CREDITS.md`.

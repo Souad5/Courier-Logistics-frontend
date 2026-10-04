@@ -114,5 +114,7 @@ export const admin = {
     allActions: "All actions",
     entityFilter: "Filter by entity",
     allEntities: "All entities",
+    searchLabel: "Search audit logs",
+    searchPlaceholder: "Actor, email, IP, entity ID or action…",
   },
 };

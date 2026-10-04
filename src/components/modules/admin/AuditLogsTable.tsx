@@ -4,6 +4,7 @@ import { ClearFiltersButton } from "@/components/shared/ClearFiltersButton";
 import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { FilterSelect } from "@/components/shared/FilterSelect";
+import { SearchInput } from "@/components/shared/SearchInput";
 import { SortSelect } from "@/components/shared/SortSelect";
 import { TableToolbar } from "@/components/shared/TableToolbar";
 import { useAuditLogs } from "@/hooks/useAdmin";
@@ -23,7 +24,7 @@ export function AuditLogsTable() {
   const { t, f } = useI18n();
   const labels = t.admin.auditLogs;
   const pagination = usePagination();
-  const { query, setPage, setLimit, setFilter } = pagination;
+  const { query, setPage, setLimit, setSearch, setFilter } = pagination;
   const { data, isLoading, isFetching, error, refetch } = useAuditLogs(query);
 
   const columns: DataTableColumn<AuditLog>[] = [
@@ -80,7 +81,17 @@ export function AuditLogsTable() {
       emptyDescription={labels.emptyDescription}
       toolbar={
         <TableToolbar
-          start={<ClearFiltersButton pagination={pagination} />}
+          start={
+            <>
+              <SearchInput
+                value={String(query.search ?? "")}
+                onSearch={setSearch}
+                placeholder={labels.searchPlaceholder}
+                label={labels.searchLabel}
+              />
+              <ClearFiltersButton pagination={pagination} />
+            </>
+          }
           end={
             <>
               <FilterSelect
